@@ -1,0 +1,29 @@
+.button-no-default {
+  border: none;
+  outline: none;
+}
+.button-no-default:focus{
+	border: none;
+  outline: none;
+}
+.button-expand-90 {
+  width: 90% !important;
+}
+.line-button {
+	height: 50px;
+	border-radius: 10px;
+	background-color: #00c300;
+	color: white;
+	font-family: 'Roboto Condensed' ;
+}
+.line-button img {
+	width: auto;
+	height: 90%;
+}
+.line-button:hover{
+	background: #00E000;
+}
+.line-button:hover img{
+	content: url('../../asset/Line_Hover.png');
+}
+
