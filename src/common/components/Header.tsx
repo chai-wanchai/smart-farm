@@ -1,32 +1,82 @@
 import React from "react"
-import '../../style/Header.css'
-import logo from '../../asset/scg-logo.png'
-import { Container, Row, Col, Navbar, Nav } from 'react-bootstrap'
-import { Link } from 'react-router-dom';
-export default class Header extends React.Component<any> {
+import logo from '../../asset/app-logo.png'
+import { Container, Divider, Dropdown, Grid, Header, Image, List, Menu, Segment, MenuItemProps } from 'semantic-ui-react'
+import Router from 'next/router';
+interface IMenu {
+	menuId: number;
+	menuName: string;
+	url?: string;
+	isActive: boolean;
+	menuChildren?: Array<IMenu>
+}
+interface IState {
+	menuList: Array<IMenu>
+}
+
+export default class HeaderLayout extends React.Component<any, IState> {
+	constructor(props) {
+		super(props);
+		this.state = {
+			menuList: [
+				{ menuId: 1, menuName: 'หน้าแรก', url: '/', isActive: false },
+				{ menuId: 2, menuName: 'บันทึกประวัติ', url: '/maintain/history', isActive: false },
+				{
+					menuId: 3, menuName: 'จัดการข้อมูลสัตว์', url: '/maintain/animal', isActive: false,
+					// menuChildren: [
+					// 	{ menuId: 4, menuName: 'เพิ่มข้อมูลสัตว์', url: '/maintain/animal/create', isActive: false },
+					// 	{ menuId: 4, menuName: 'แก้ไขข้อมูลสัตว์', url: '/maintain/animal/edit', isActive: false }
+					// ]
+				}
+			]
+		}
+		this.onClickLink = this.onClickLink.bind(this)
+	}
+	componentDidMount() {
+		const router = Router.router;
+		if (router && router.asPath) {
+			const path = router.asPath;
+			let stateMenu = this.state.menuList.map(item => {
+				if (item.url === path) {
+					item.isActive = true
+				} else {
+					item.isActive = false
+				}
+				return item;
+			})
+			this.setState({ menuList: stateMenu })
+		}
+	}
+	onClickLink(e: any, dataEvent: any) {
+		let dataState = this.state.menuList.map(item => {
+			if (item.menuId === dataEvent.data.menuId) {
+				item.isActive = true;
+			} else {
+				item.isActive = false;
+			}
+			return item;
+		})
+		this.setState({ menuList: dataState })
+	}
+	renderMenu(menuData: IMenu) {
+
+	}
 	render() {
 		return (
 			<React.Fragment>
-				<Navbar bg="dark">
-					<Navbar.Brand href="#home">
-						<img src={logo} width="100px" />
-					</Navbar.Brand>
-					<Navbar.Collapse className='navbar-collapse'>
-						<Nav>
-							<Nav.Item>
-								<Link to="/login">Login</Link>
-							</Nav.Item>
-							<Nav.Item>
-								<Link to="/">Home</Link>
-							</Nav.Item>
-							<Nav.Item>
-								<Link to="/yy">Active</Link>
-							</Nav.Item>
-						</Nav>
-					</Navbar.Collapse>
+				<Menu fixed='top' color="red">
+					<Container fluid={true}>
+						<Menu.Item as='a' header href='/'>
+							<Image size='mini' src='/img/app-logo.png' style={{ marginRight: '1.5em' }} />
+         			Smart Farm
+        		</Menu.Item>
+						<Menu.Menu position={"right"}>
+							{this.state.menuList.map(item => {
+								return <Menu.Item as='a' href={item.url} key={item.menuId} active={item.isActive} onClick={this.onClickLink} data={item}>{item.menuName}</Menu.Item>
+							})}
+						</Menu.Menu>
 
-
-				</Navbar>
+					</Container>
+				</Menu>
 			</React.Fragment>
 		)
 	}

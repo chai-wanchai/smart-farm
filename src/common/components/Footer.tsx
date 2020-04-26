@@ -4,7 +4,9 @@ export default class Footer extends React.Component<any> {
 	render() {
 		return (
 			<React.Fragment>
-				<footer>TTTTTTTEEEEE</footer>
+				<footer>
+					<div></div>
+				</footer>
 			</React.Fragment>
 		)
 	}
