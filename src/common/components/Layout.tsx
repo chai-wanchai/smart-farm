@@ -10,7 +10,7 @@ export default class Layout extends React.Component<any> {
 		return (
 			<React.Fragment>
 				<HeaderLayout {...this.props}/>
-				<Container text style={{ marginTop: '5em' }}>				
+				<Container width="12" style={{ marginTop: '5em' }}>				
 					{this.props.children}
 				</Container>
 				<Footer />

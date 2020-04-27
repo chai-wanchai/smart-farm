@@ -30,8 +30,6 @@ class Home extends Component<any, any> {
             </Card.Content>
           </Card>
         </Card.Group>
-
-        <AnimalForm />
       </div>
     );
   }
