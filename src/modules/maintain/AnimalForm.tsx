@@ -31,6 +31,7 @@ class AnimalForm extends Component<any, any> {
       species: '',
       discription: '',
       dob: null,
+      sex: '',
       picture: []
     }
   }
@@ -155,6 +156,13 @@ class AnimalForm extends Component<any, any> {
               label="พันธุ์สัตว์"
               value={value.name}
               name='species'
+              onChange={this.handleChange}>
+            </Form.Input>
+            <Form.Input
+              placeholder="เพศ"
+              label="เพศ"
+              value={value.name}
+              name='sex'
               onChange={this.handleChange}>
             </Form.Input>
           </Form.Group>

@@ -3,13 +3,14 @@ import { Menu, Segment, Grid } from 'semantic-ui-react';
 import AnimalForm from '../../src/modules/maintain/AnimalForm';
 import * as _ from 'lodash';
 import Home from '../../src/modules/dashboard/Home';
+import ListAnimal from '../../src/modules/maintain/ListAnimal';
 class animal extends Component<any, any> {
   constructor(props) {
     super(props);
     this.state = {
       menu: [
         { menuId: 1, menuName: 'เพิ่มข้อมูลสัตว์', component: AnimalForm, isActive: true },
-        { menuId: 2, menuName: 'ปรับปรุงข้อมูลสัตว์', component: Home, isActive: false }
+        { menuId: 2, menuName: 'ปรับปรุงข้อมูลสัตว์', component: ListAnimal, isActive: false }
       ]
     }
     this.onClickMenu = this.onClickMenu.bind(this)
