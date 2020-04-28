@@ -21,7 +21,8 @@ class AnimalForm extends Component<any, any> {
         { animalTypeId: 1, animalType: 'วัว' },
         { animalTypeId: 2, animalType: 'แกะ' },
         { animalTypeId: 0, animalType: 'อื่นๆ' }
-      ]
+      ],
+      sex: [{ sex: 'MALE', sexName: 'เพศผู้' }, { sex: 'FEMALE', sexName: 'เพศเมีย' }, { sex: 'NULL', sexName: 'ไม่ระบุ' }]
     },
     value: {
       barcode: '',
@@ -112,7 +113,7 @@ class AnimalForm extends Component<any, any> {
   render() {
     const { value, data, mode } = this.state
     let animalType = data.animalType.map(item => { return { text: item.animalType, value: item.animalTypeId } })
-
+    let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
     return (
       <div>
         <Form onSubmit={this.handleSubmit}>
@@ -158,13 +159,14 @@ class AnimalForm extends Component<any, any> {
               name='species'
               onChange={this.handleChange}>
             </Form.Input>
-            <Form.Input
+            <Form.Select
               placeholder="เพศ"
               label="เพศ"
-              value={value.name}
+              options={sex}
+              value={value.sex}
               name='sex'
               onChange={this.handleChange}>
-            </Form.Input>
+            </Form.Select>
           </Form.Group>
           <Form.Field>
             <DateInput

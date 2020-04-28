@@ -1,7 +1,7 @@
 {
   "hosting": {
-    "site": "raykra",
-    "public": "build",
+    "public": "out",
+    "site": "smart-farm-arwut",
     "ignore": [
       "firebase.json",
       "**/.*",

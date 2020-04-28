@@ -17,10 +17,11 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
+/out/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.cache
 /.next/*
 /src/.next/*
+*-debug.log*

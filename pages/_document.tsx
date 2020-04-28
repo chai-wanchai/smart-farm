@@ -16,6 +16,7 @@ export default class Document extends NextDocument {
           {/** fonts */}
           <link rel='stylesheet' href={`https://fonts.googleapis.com/css2?family=K2D:ital,wght@0,100;0,300;0,700;1,100;1,300;1,700&display=swap`} />
           {/** cdn css */}
+          <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet"></link>
           <link rel='stylesheet' href={`https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css`} />
           <link rel='stylesheet' href={`https://cdn.jsdelivr.net/npm/react-datepicker@2.12.1/dist/react-datepicker.min.css`} />
           <script src="https://cdn.jsdelivr.net/npm/semantic-ui-calendar-react@latest/dist/umd/semantic-ui-calendar-react.js"></script>
