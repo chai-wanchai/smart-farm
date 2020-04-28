@@ -18,7 +18,7 @@ export default class HeaderLayout extends React.Component<any, IState> {
 		super(props);
 		this.state = {
 			menuList: [
-				{ menuId: 1, menuName: 'หน้าแรก', url: '/', isActive: false },
+				{ menuId: 1, menuName: 'หน้าแรก', url: '/home', isActive: false },
 				{ menuId: 2, menuName: 'บันทึกประวัติ', url: '/maintain/history', isActive: false },
 				{
 					menuId: 3, menuName: 'จัดการข้อมูลสัตว์', url: '/maintain/animal', isActive: false,

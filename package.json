@@ -1,8 +1,7 @@
 {
-  "name": "my-app",
+  "name": "smart-farm-arwut",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://wanchai23chai.github.io/baseStructureReactTS",
   "dependencies": {
     "@types/jest": "24.0.23",
     "@types/node": "12.12.14",
@@ -12,6 +11,8 @@
     "@zeit/next-typescript": "^1.1.1",
     "axios": "^0.19.0",
     "bootstrap": "^4.4.1",
+    "firebase-admin": "^8.11.0",
+    "firebase-functions": "^3.6.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "next": "^9.3.5",
@@ -27,14 +28,15 @@
     "universal-cookie": "^4.0.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "next start",
     "dev": "next",
-    "build": "react-scripts build",
+    "build": "next build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "deploy-firebase": "npm run build && firebase deploy --only hosting:raykra"
+    "deploy": "next build && firebase deploy",
+    "deploy-firebase": "next build && firebase deploy --only hosting:smart-farm-arwut",
+    "serve": "NODE_ENV=production firebase serve"
   },
   "eslintConfig": {
     "extends": "react-app"
