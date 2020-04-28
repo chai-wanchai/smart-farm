@@ -1,6 +1,7 @@
 import React from "react";
-import Header from './Header'
+import HeaderLayout from './Header'
 import Footer from './Footer'
+import { Container, Header } from "semantic-ui-react";
 export default class Layout extends React.Component<any> {
 	constructor(props: any) {
 		super(props)
@@ -8,8 +9,10 @@ export default class Layout extends React.Component<any> {
 	render() {
 		return (
 			<React.Fragment>
-				<Header />
-				{this.props.children}
+				<HeaderLayout {...this.props}/>
+				<Container width="12" style={{ marginTop: '5em' }}>				
+					{this.props.children}
+				</Container>
 				<Footer />
 			</React.Fragment>
 		)

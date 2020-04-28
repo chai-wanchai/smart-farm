@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import logo from '../../asset/Line_Base.png';
 import './lineLogin.css';
-import LIFF from '../../common/LineLoginBase';
-import AuthApi from '../../api/AuthApi'
+import LIFF from '../../LineLoginBase';
+import AuthApi from '../../../api/AuthApi'
 export default class GoogleLogin extends Component<any> {
 
 	constructor(props: any) {
