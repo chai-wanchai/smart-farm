@@ -30,7 +30,7 @@ class AnimalForm extends Component<any, any> {
       animalTypeOther: null,
       name: '',
       species: '',
-      discription: '',
+      description: '',
       dob: null,
       sex: '',
       picture: []
@@ -57,8 +57,6 @@ class AnimalForm extends Component<any, any> {
     const result = await SmartFarmApi.saveAnimal(value)
     console.log(result);
 
-
-
   }
   handleUploadFileChange(e) {
     _.forEach(e.target.files, (file) => {
@@ -84,7 +82,7 @@ class AnimalForm extends Component<any, any> {
   onDeletePicture(event, data) {
     const filename = data.data.filename
     let value = this.state.value
-    value.picture = _.reduce(value.picture, (result, valueItem) => {
+    value.picture = _.reduce(value.picture, (result:any, valueItem) => {
       if (valueItem.filename !== filename) {
         result.push(valueItem)
       }
@@ -167,13 +165,14 @@ class AnimalForm extends Component<any, any> {
               iconPosition="left"
               onChange={this.handleChange}
               localization='th'
+              duration={0}
             />
           </Form.Field>
           <Form.TextArea
             placeholder="รายละเอียด"
             label="รายละเอียด"
-            name="discription"
-            value={value.discription}
+            name="description"
+            value={value.description}
             onChange={this.handleChange}>
           </Form.TextArea>
           {mode === 'create' ?

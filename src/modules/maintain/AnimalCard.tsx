@@ -30,7 +30,7 @@ export default class AnimalCard extends Component<IProp, any> {
   onDeletePicture(event, data) {
     const filename = data.data.filename
     let value = { ...this.state }
-    value.picture = _.reduce(value.picture, (result, valueItem) => {
+    value.picture = _.reduce(value.picture, (result:any, valueItem) => {
       if (valueItem.filename !== filename) {
         result.push(valueItem)
       }

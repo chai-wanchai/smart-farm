@@ -53,7 +53,6 @@ const getErrorMessage = (statusCode): ErrorMessage => {
 class ErrorPage extends Component<ErrorPageProps> {
   static getInitialProps(ctx: NextPageContext) {
     const { res, err, asPath } = ctx
-    console.log(ctx)
     const statusCode = res ? res.statusCode : err ? err.statusCode : null
     const path = asPath ? asPath : null
     return {
