@@ -53,17 +53,7 @@ class AnimalForm extends Component<any, any> {
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
-    const formData = new FormData()
-    const value = this.state.value
-    Object.keys(value).forEach(key => {
-      if (key === 'picture') {
-        value.picture.forEach(item => {
-          formData.append(item.meta.name, item.meta)
-        })
-      } else {
-        formData.append(key, value[key])
-      }
-    })
+    const value = this.state.value  
     const result = await SmartFarmApi.saveAnimal(value)
     console.log(result);
 
