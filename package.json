@@ -28,7 +28,7 @@
     "universal-cookie": "^4.0.2"
   },
   "scripts": {
-    "start": "next start",
+    "start": "next start -p $PORT",
     "dev": "next",
     "build": "next build",
     "test": "react-scripts test",
