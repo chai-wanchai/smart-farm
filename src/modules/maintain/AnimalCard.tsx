@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Card, Image, Button } from 'semantic-ui-react'
 import styles from './AnimalForm.module.css'
 import * as _ from 'lodash';
-import moment from 'moment'
+// import moment from 'moment'
 import AnimalForm from './AnimalForm';
 interface IProp {
   data: any
@@ -55,7 +55,7 @@ export default class AnimalCard extends Component<IProp, any> {
         </Image.Group>
         <Card.Content>
           <Card.Header>{this.state.name}</Card.Header>
-          <Card.Meta>เกิดวันที่ {moment(this.state.dob).format('YYYY-MM-DD')} อายุ {moment(this.state.dob).fromNow()} ปี</Card.Meta>
+          {/* <Card.Meta>เกิดวันที่ {moment(this.state.dob).format('YYYY-MM-DD')} อายุ {moment(this.state.dob).fromNow()} ปี</Card.Meta> */}
           <Card.Description>
             {/* <AnimalForm/> */}
           </Card.Description>
