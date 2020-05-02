@@ -6,8 +6,7 @@ import styles from './AnimalForm.module.css'
 import SmartFarmApi from '../../api/SmartFarmApi';
 import Resizer from 'react-image-file-resizer';
 import moment from 'moment';
-import localization from 'moment/locale/th';
-moment.updateLocale('th', localization);
+import 'moment/locale/th';
 
 class AnimalForm extends Component<any, any> {
   refsFileUpload: RefObject<any>;
