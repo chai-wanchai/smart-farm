@@ -5,7 +5,8 @@ import * as _ from 'lodash';
 // import moment from 'moment'
 import AnimalForm from './AnimalForm';
 interface IProp {
-  data: any
+  data: any,
+  mode: 'view' | 'edit'
 }
 export default class AnimalCard extends Component<IProp, any> {
   constructor(props) {
@@ -18,19 +19,18 @@ export default class AnimalCard extends Component<IProp, any> {
       species: '',
       discription: '',
       dob: null,
-      picture: []
+      pictures: []
     }
   }
   componentDidMount() {
     if (!_.isEmpty(this.props.data)) {
       this.setState({ ...this.props.data })
     }
-
   }
   onDeletePicture(event, data) {
-    const filename = data.data.filename
+    const filename = data.data.ID
     let value = { ...this.state }
-    value.picture = _.reduce(value.picture, (result:any, valueItem) => {
+    value.pictures = _.reduce(value.pictures, (result:any, valueItem) => {
       if (valueItem.filename !== filename) {
         result.push(valueItem)
       }
@@ -42,14 +42,14 @@ export default class AnimalCard extends Component<IProp, any> {
     return (
       <Card fluid>
         <Image.Group size="medium" className={styles['text-center']}>
-          {this.state.picture.map(item => {
-            return <div className={styles['pic-div']} key={item.filename}>
+          {this.state.pictures.map(item => {
+            return <div className={styles['pic-div']} key={item.ID}>
               <Button type="button"
                 icon="window close"
                 className={styles['pic-delete-btn']}
                 data={item}
                 onClick={this.onDeletePicture}></Button>
-              <Image src={item.data} alt={item.filename} rounded />
+              <Image src={item.data} alt={item.ID} rounded />
             </div>
           })}
         </Image.Group>
@@ -61,6 +61,7 @@ export default class AnimalCard extends Component<IProp, any> {
           </Card.Description>
           <Card.Content>
             <Button color="yellow">แก้ไข</Button>
+            <Button color="red">ลบ</Button>
           </Card.Content>
         </Card.Content>
       </Card>
