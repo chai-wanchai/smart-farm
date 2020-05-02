@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express'
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
-import { DatabaseError } from 'sequelize'
+import { DatabaseError, SequelizeScopeError } from 'sequelize'
 import { ERROR_CODE } from './constants/ErrorCode';
 export interface IError {
   statusCode: number,
@@ -96,9 +96,17 @@ export class ErrorHandle {
       this.error = ErrorData.getError()
     } else if (ErrorData instanceof ErrorHandle) {
       this.error = ErrorData.getError()
+    } else if (ErrorData instanceof SequelizeScopeError) {
+      console.log('cccjcjcjcjdjfdsgus');
     }
-    else if ('message' in ErrorData) {
+    if ('message' in ErrorData) {
       this.error.errorMessage = ErrorData.message
+    }
+    if ('name' in ErrorData) {
+      this.error.errorCode = ErrorData.name;
+    }
+    if('errors' in ErrorData) {
+      this.error.data = ErrorData.errors
     }
   }
   public sendErrorResponse(res: Response, statusCode?: number) {

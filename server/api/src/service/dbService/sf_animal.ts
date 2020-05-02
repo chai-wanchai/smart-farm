@@ -8,15 +8,15 @@ export const Attributes: ModelAttributes = {
   AnimalName: {
     type: DataTypes.STRING
   },
+  Sex: {
+    type: DataTypes.STRING
+  },
   DOB: {
     type: DataTypes.DATEONLY
   },
   Description: {
     type: DataTypes.TEXT,
     allowNull: true
-  },
-  AnimalSpeciesId: {
-    type: DataTypes.INTEGER
   }
 }
 

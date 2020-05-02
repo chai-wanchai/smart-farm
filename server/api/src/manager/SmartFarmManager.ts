@@ -2,16 +2,77 @@ import dbService from '../service/dbService'
 import animal from '../service/dbService/sf_animal'
 import { ErrorHandle } from '../common/errorHandle'
 import moment from 'moment'
-import { Model, FindOptions, FindAttributeOptions } from 'sequelize/types'
+import { Model, FindOptions, FindAttributeOptions, UpdateOptions } from 'sequelize/types'
 export class SmartFarmManager {
-  async getAnimals() {
+  async getAnimalsType() {
     try {
-      const rename: FindAttributeOptions = [['AnimalName', 'name'], ['Barcode', 'barcode'], ['DOB', 'dob'], ['Description', 'description']]
-      const option: FindOptions = { include: [{ model: dbService.animalPic, as: 'pictures', attributes: ['ID',['Picture', 'base64']] }], attributes: rename }
-      const result = await dbService.animal.findAll(option)
+      const rename: FindAttributeOptions = [
+        ['ID', 'animalTypeId'],
+        ['AnimalTypeName', 'animalTypeName'],
+        ['Description', 'description']
+      ]
+      const result = await dbService.animalType.findAll({ attributes: rename })
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
+      throw err
+    }
+  }
+  async addAnimalPicture(data: any) {
+    if (data.pictures.length > 0) {
+      data.pictures.forEach(async (item) => {
+        const buff = new Buffer(item.data)
+        const insertPic = {
+          Barcode: data.barcode,
+          Picture: buff,
+          FileName: item.filename
+        }
+        await dbService.animalPic.create(insertPic)
+      })
+    }
+  }
+  async findAnimalType() {
+
+  }
+  async getAnimals(barcode?: string) {
+    try {
+      const rename: FindAttributeOptions = [
+        ['AnimalName', 'name'],
+        ['Barcode', 'barcode'],
+        ['DOB', 'dob'],
+        ['Description', 'description'],
+        ['Sex', 'sex'],
+        ['AnimalTypeId', 'animalTypeId']
+      ]
+      const option: FindOptions = {
+        include: [{ model: dbService.animalPic, as: 'pictures', attributes: ['ID', ['FileName', 'filename']] }],
+        attributes: rename
+      }
+      let result: any = []
+      if (barcode) {
+        result = await dbService.animal.findByPk(barcode, option)
+      } else {
+        result = await dbService.animal.findAll(option)
+      }
+      return result
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err
+    }
+  }
+  async deleteAnimalsByBarcode(barcode: string) {
+    try {
+      const data = await dbService.animal.destroy({ where: { Barcode: barcode } })
+      let result = {
+        isSuccess: true,
+        deleted: barcode
+      }
+      if (data === 0) {
+        result.isSuccess = false
+      }
+      return result
+    } catch (e) {
+      const err = new ErrorHandle(e)
       throw err
     }
   }
@@ -21,20 +82,12 @@ export class SmartFarmManager {
         Barcode: data.barcode,
         AnimalName: data.name,
         //DOB: data.dob,
+        Sex: data.sex,
+        AnimalTypeId: data.animalTypeId,
         Description: data.description
       }
       const result = await dbService.animal.create(insertData)
-      if (data.picture.length > 0) {
-        data.picture.forEach(async (item) => {
-          const buff = new Buffer(item.data)
-          const insertPic = {
-            Barcode: data.barcode,
-            Picture: buff,
-            FileName: item.filename
-          }
-          await dbService.animalPic.create(insertPic)
-        })
-      }
+      this.addAnimalPicture(data)
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -43,8 +96,27 @@ export class SmartFarmManager {
   }
   async updateAnimal(data) {
     try {
-      const result = await dbService.animal.create(data)
-      return result
+      let animalType = { ID: data.animalTypeId }
+      if (data.animalTypeId === 0 && data.animalTypeOther) {
+        const animalTypeResult = await dbService.animalType.findOrCreate(
+          { where: { AnimalTypeName: data.animalTypeOther }, defaults: { AnimalTypeName: data.animalTypeOther } })
+        animalType.ID = animalTypeResult[0].ID
+      }
+      const insertData = {
+        Barcode: data.barcode,
+        AnimalName: data.name,
+        AnimalTypeId: animalType.ID,
+        DOB: data.dob,
+        Sex: data.sex,
+        Description: data.description
+      }
+      const option: UpdateOptions = {
+        where: { Barcode: insertData.Barcode },
+        returning: true
+      }
+      const result = await dbService.animal.update(insertData, option)
+      this.addAnimalPicture(data)
+      return result[1]
     } catch (error) {
       const err = new ErrorHandle(error)
       throw err
@@ -53,6 +125,31 @@ export class SmartFarmManager {
   async createAnimalHistory(data) {
     try {
       const result = await dbService.animalHistory.create(data)
+      return result
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err
+    }
+  }
+  async getAnimalPictures(ID: number, barcode: string, filename: string) {
+    try {
+      const result = await dbService.animalPic.findOne({ where: { Barcode: barcode, FileName: filename, ID: ID } })
+      return result
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err
+    }
+  }
+  async deleteAnimalPictures(ID: number) {
+    try {
+      const data = await dbService.animalPic.destroy({ where: { ID: ID } })
+      let result = {
+        isSuccess: true,
+        deleted: ID
+      }
+      if (data === 0) {
+        result.isSuccess = false
+      }
       return result
     } catch (error) {
       const err = new ErrorHandle(error)

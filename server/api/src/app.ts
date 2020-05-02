@@ -15,6 +15,9 @@ app.use('/api/v1', users)
 app.use('/api/v1', role)
 app.use('/api/v1', client)
 app.use('/api/v1', smartfarm)
+app.use('/api/v1/*', (req, res, next) => {
+  return res.status(404).json({ status: 404, message: 'Not found : '+req.url })
+})
 
 
 export default app;

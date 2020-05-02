@@ -7,29 +7,34 @@ import SmartFarmApi from '../../api/SmartFarmApi';
 import Resizer from 'react-image-file-resizer';
 import moment from 'moment';
 import 'moment/locale/th';
+import Router from 'next/router';
 
-class AnimalForm extends Component<any, any> {
+interface IProp {
+  value?: any,
+  mode?: 'create' | 'edit'
+}
+interface IState {
+  data: any,
+  value: any,
+  mode: 'create' | 'edit'
+}
+class AnimalForm extends Component<IProp, IState> {
   refsFileUpload: RefObject<any>;
-  initState = {
+  initState: IState = {
     mode: 'create',
     data: {
-      animalType: [
-        { animalTypeId: 1, animalType: 'วัว' },
-        { animalTypeId: 2, animalType: 'แกะ' },
-        { animalTypeId: 0, animalType: 'อื่นๆ' }
-      ],
+      animalType: [],
       sex: [{ sex: 'MALE', sexName: 'เพศผู้' }, { sex: 'FEMALE', sexName: 'เพศเมีย' }, { sex: 'NULL', sexName: 'ไม่ระบุ' }]
     },
     value: {
       barcode: '',
-      animalType: '',
+      animalTypeId: '',
       animalTypeOther: null,
       name: '',
-      species: '',
       description: '',
-      dob: null,
+      dob: '',
       sex: '',
-      picture: []
+      pictures: []
     }
   }
   constructor(props) {
@@ -42,16 +47,33 @@ class AnimalForm extends Component<any, any> {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.refsFileUpload = React.createRef();
   }
+  async fetchStaticData() {
+    const data = await SmartFarmApi.getAnimalsType()
+    data.push({ animalTypeId: 0, animalTypeName: 'อื่นๆ' })
+    this.setState({ data: { ...this.state.data, animalType: data } })
+  }
   handleChange(e, data) {
     const key = data.name;
-    const value = data.value;
+    let value = data.value;
     let stateValue = { ...this.state.value, [key]: value };
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
-    const value = this.state.value
-    const result = await SmartFarmApi.saveAnimal(value)
-    console.log(result);
+    let value = this.state.value
+    value.dob = moment(value.dob).format()
+    let result = null
+    if (this.props.mode === 'create') {
+      result = await SmartFarmApi.saveAnimal(value)
+    } else {
+      value.pictures = _.reduce(value.pictures, (dataResult: any, item) => {
+        if (item.filename) {
+          dataResult.push(item)
+        }
+        return dataResult
+      }, [])
+      result = await SmartFarmApi.updateAnimalInfo(value)
+    }
+    Router.reload()
 
   }
   handleUploadFileChange(e) {
@@ -60,7 +82,7 @@ class AnimalForm extends Component<any, any> {
       let value = this.state.value;
       Resizer.imageFileResizer(file, 500, 500, 'JPEG', 100, 0, uri => {
         const imgMeta = { filename: fileName, data: uri }
-        value.picture.push(imgMeta)
+        value.pictures.push(imgMeta)
         this.setState({ value: value });
       }, 'base64')
 
@@ -76,10 +98,11 @@ class AnimalForm extends Component<any, any> {
 
   }
   onDeletePicture(event, data) {
-    const filename = data.data.filename
+    console.log(data);
+    const delFile = data.data
     let value = this.state.value
-    value.picture = _.reduce(value.picture, (result: any, valueItem) => {
-      if (valueItem.filename !== filename) {
+    value.pictures = _.reduce(value.pictures, (result: any, valueItem) => {
+      if (valueItem.filename !== delFile.filename && valueItem.ID !== delFile.ID) {
         result.push(valueItem)
       }
       return result
@@ -87,19 +110,29 @@ class AnimalForm extends Component<any, any> {
     this.setState({ value: value })
   }
   onReset() {
-    let stateInint = this.initState
-    stateInint.value.picture = []
+    let stateInint: any = {}
+    if (this.props.mode === 'create') {
+      stateInint = { ...this.initState }
+      stateInint.pictures = []
+    } else {
+      stateInint = { data: this.state.data, value: this.props.value, mode: this.props.mode }
+    }
     this.setState({ ...stateInint })
   }
   componentDidMount() {
-
+    if (this.props.value) {
+      let value = this.props.value
+      this.setState({ value: value, mode: 'edit' })
+    }
+    this.fetchStaticData()
   }
   render() {
     const { value, data, mode } = this.state
-    let animalType = data.animalType.map(item => { return { text: item.animalType, value: item.animalTypeId } })
+    console.log(this.state);
+    let animalType = data.animalType.map(item => { return { text: item.animalTypeName, value: item.animalTypeId } })
     let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
     return (
-      <div>
+      <div style={{ padding: '1rem' }}>
         <Form onSubmit={this.handleSubmit}>
           <Form.Group>
             <Form.Input
@@ -109,6 +142,7 @@ class AnimalForm extends Component<any, any> {
               label="Barcode"
               value={value.barcode}
               name="barcode"
+              readOnly={mode === 'edit'}
               onChange={this.handleChange}>
             </Form.Input>
             <Form.Input
@@ -125,10 +159,10 @@ class AnimalForm extends Component<any, any> {
               label="ชนิดสัตว์"
               options={animalType}
               placeholder="ชนิดสัตว์"
-              value={value.animalType}
+              value={value.animalTypeId}
               onChange={this.handleChange}
-              name="animalType" />
-            {value.animalType === 0 ?
+              name="animalTypeId" />
+            {value.animalTypeId === 0 ?
               <Form.Input
                 placeholder="ระบุชนิดสัตว์"
                 label="ระบุชนิดสัตว์"
@@ -136,13 +170,6 @@ class AnimalForm extends Component<any, any> {
                 name="animalTypeOther"
                 onChange={this.handleChange}>
               </Form.Input> : null}
-            <Form.Input
-              placeholder="พันธุ์สัตว์"
-              label="พันธุ์สัตว์"
-              value={value.name}
-              name='species'
-              onChange={this.handleChange}>
-            </Form.Input>
             <Form.Select
               placeholder="เพศ"
               label="เพศ"
@@ -158,11 +185,12 @@ class AnimalForm extends Component<any, any> {
               placeholder="วันที่เกิด"
               label="วันที่เกิด"
               value={value.dob}
+              dateFormat="DD-MM-YYYY"
               iconPosition="left"
               closable={true}
               onChange={this.handleChange}
               localization='th'
-              duration={0}
+              duration={10}
             />
           </Form.Field>
           <Form.TextArea
@@ -172,28 +200,27 @@ class AnimalForm extends Component<any, any> {
             value={value.description}
             onChange={this.handleChange}>
           </Form.TextArea>
-          {mode === 'create' ?
-            <Form.Field>
-              <Button
-                type="button"
-                content="เลือกรูปภาพ"
-                labelPosition="left"
-                icon="upload"
-                onClick={() => this.refsFileUpload.current.click()}
-              />
-              <input
-                ref={this.refsFileUpload}
-                name='picture'
-                type="file"
-                multiple
-                hidden
-                onChange={this.handleUploadFileChange}
-              />
-            </Form.Field> : null
-          }
+
+          <Form.Field>
+            <Button
+              type="button"
+              content="เลือกรูปภาพ"
+              labelPosition="left"
+              icon="upload"
+              onClick={() => this.refsFileUpload.current.click()}
+            />
+            <input
+              ref={this.refsFileUpload}
+              name='picture'
+              type="file"
+              multiple
+              hidden
+              onChange={this.handleUploadFileChange}
+            />
+          </Form.Field>
 
           <Image.Group size="medium" className={styles['text-center']}>
-            {value.picture.map(item => {
+            {value.pictures.map(item => {
               return <div className={styles['pic-div']} key={item.filename}>
                 <Button type="button"
                   icon="window close"
@@ -206,7 +233,7 @@ class AnimalForm extends Component<any, any> {
           </Image.Group>
 
           <Form.Group className={styles['center-div']}>
-            <Form.Button color="green" icon="saves" type="submit">บันทึกข้อมูล</Form.Button>
+            <Form.Button color="green" type="submit">บันทึกข้อมูล</Form.Button>
             <Form.Button color="red" type="reset" onClick={this.onReset}>ล้างข้อมูล</Form.Button>
           </Form.Group>
 

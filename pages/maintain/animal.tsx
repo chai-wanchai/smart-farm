@@ -9,11 +9,12 @@ class animal extends Component<any, any> {
     super(props);
     this.state = {
       menu: [
-        { menuId: 1, menuName: 'เพิ่มข้อมูลสัตว์', component: AnimalForm, isActive: true },
-        { menuId: 2, menuName: 'ปรับปรุงข้อมูลสัตว์', component: ListAnimal, isActive: false }
+        { menuId: 1, menuName: 'เพิ่มข้อมูลสัตว์', isActive: true },
+        { menuId: 2, menuName: 'ปรับปรุงข้อมูลสัตว์', isActive: false }
       ]
     }
     this.onClickMenu = this.onClickMenu.bind(this)
+    this.renderChildComponent = this.renderChildComponent.bind(this)
   }
   onClickMenu(e, dataEvent) {
     let menu = this.state.menu.map(item => {
@@ -26,9 +27,19 @@ class animal extends Component<any, any> {
     })
     this.setState({ menu })
   }
+  renderChildComponent() {
+    const menuActive: any = _.find(this.state.menu, { isActive: true })
+    if (menuActive) {
+      if (menuActive.menuId === 1) {
+        return <AnimalForm />
+      } else {
+        return <ListAnimal mode="edit" />
+      }
+    } else {
+      return null
+    }
+  }
   render() {
-    const ChildComponent = _.find(this.state.menu, { isActive: true }).component
-
     return (
       <React.Fragment>
         <Grid>
@@ -38,9 +49,8 @@ class animal extends Component<any, any> {
                 return <Menu.Item active={item.isActive} name={item.menuName} key={item.menuId} data={item} onClick={this.onClickMenu} />
               })}
             </Menu>
-         
             <Segment>
-              <ChildComponent />
+              {this.renderChildComponent()}
             </Segment>
           </Grid.Column>
         </Grid>
