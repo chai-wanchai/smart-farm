@@ -1,17 +1,14 @@
 import React, { Component, RefObject } from 'react';
 import { Card, Form, Input, Image, Button, Icon, Container } from 'semantic-ui-react';
-import moment from 'moment';
-import 'moment/locale/th';
 import * as _ from 'lodash';
-import {
-  DateInput,
-  TimeInput,
-  DateTimeInput,
-  DatesRangeInput
-} from 'semantic-ui-calendar-react';
+import { DateInput } from 'semantic-ui-calendar-react';
 import styles from './AnimalForm.module.css'
 import SmartFarmApi from '../../api/SmartFarmApi';
 import Resizer from 'react-image-file-resizer';
+import moment from 'moment';
+import localization from 'moment/locale/th';
+moment.updateLocale('th', localization);
+
 class AnimalForm extends Component<any, any> {
   refsFileUpload: RefObject<any>;
   initState = {
@@ -53,7 +50,7 @@ class AnimalForm extends Component<any, any> {
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
-    const value = this.state.value  
+    const value = this.state.value
     const result = await SmartFarmApi.saveAnimal(value)
     console.log(result);
 
@@ -82,7 +79,7 @@ class AnimalForm extends Component<any, any> {
   onDeletePicture(event, data) {
     const filename = data.data.filename
     let value = this.state.value
-    value.picture = _.reduce(value.picture, (result:any, valueItem) => {
+    value.picture = _.reduce(value.picture, (result: any, valueItem) => {
       if (valueItem.filename !== filename) {
         result.push(valueItem)
       }
@@ -163,6 +160,7 @@ class AnimalForm extends Component<any, any> {
               label="วันที่เกิด"
               value={value.dob}
               iconPosition="left"
+              closable={true}
               onChange={this.handleChange}
               localization='th'
               duration={0}
