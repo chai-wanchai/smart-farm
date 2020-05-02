@@ -31,7 +31,7 @@ class animal extends Component<any, any> {
     const menuActive: any = _.find(this.state.menu, { isActive: true })
     if (menuActive) {
       if (menuActive.menuId === 1) {
-        return <AnimalForm />
+        return <AnimalForm mode="create" />
       } else {
         return <ListAnimal mode="edit" />
       }

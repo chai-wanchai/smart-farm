@@ -60,7 +60,12 @@ class AnimalForm extends Component<IProp, IState> {
   }
   async handleSubmit(e, data) {
     let value = this.state.value
-    value.dob = moment(value.dob).format()
+    if(moment(value.dob).isValid()){
+      value.dob = moment(value.dob).format()
+    }else{
+      value.dob = moment().format()
+    }
+    
     let result = null
     if (this.props.mode === 'create') {
       result = await SmartFarmApi.saveAnimal(value)
