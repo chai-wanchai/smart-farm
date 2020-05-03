@@ -65,14 +65,10 @@ export default class AnimalCard extends Component<IProp, any> {
       <Card fluid>
         <Image.Group size="medium" className={styles['text-center']}>
           {value.pictures.map(item => {
+            const showDeletePic = mode === 'edit' ?
+              { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
             return <div className={styles['pic-div']} key={item.ID}>
-              {mode === 'edit' ?
-                <Button type="button"
-                  icon="window close"
-                  className={styles['pic-delete-btn']}
-                  data={item}
-                  onClick={this.onDeletePicture}></Button> : null}
-              <Image src={item.data} alt={item.ID} rounded />
+              <Image src={item.data} alt={item.ID} rounded label={showDeletePic} />
             </div>
           })}
         </Image.Group>

@@ -4,57 +4,31 @@ import { Card } from 'semantic-ui-react';
 import styles from './Home.module.css'
 import SmartFarmApi from '../../api/SmartFarmApi';
 import BaseTable from '../../common/components/Table/baseTable';
+import TableGroupAnimal from '../component/tableGroupAnimal';
 class Home extends Component<any, any> {
   constructor(props) {
     super(props);
     this.state = {
-      "eachAnimalType": [
-        {
-          "AnimalTypeId": 1,
-          "CountAnimalType": "2",
-          "AnimalType": {
-            "AnimalTypeName": "วัว",
-            "Description": null,
-            "AnimalSpeciesName": null
-          }
-        },
-        {
-          "AnimalTypeId": 4,
-          "CountAnimalType": "2",
-          "AnimalType": {
-            "AnimalTypeName": "ปลา",
-            "Description": null,
-            "AnimalSpeciesName": null
-          }
-        },
-        {
-          "AnimalTypeId": 5,
-          "CountAnimalType": "3",
-          "AnimalType": {
-            "AnimalTypeName": "แกะ",
-            "Description": null,
-            "AnimalSpeciesName": null
-          }
-        }
-      ],
-      "totalAnimal": 7,
-      "totalAnimalType": 3
+      eachAnimalType: [],
+      totalAnimal: 0,
+      totalAnimalType: 0
     }
   }
   async componentDidMount() {
     const data = await SmartFarmApi.getSummaryFarm()
-    this.setState({ data })
+    this.setState({ ...data })
   }
   render() {
-    const { totalAnimalType, totalAnimal } = this.state;
-    const dataTable = this.state.eachAnimalType.map(animalType => {
+    const { totalAnimalType, totalAnimal,eachAnimalType } = this.state;
+   
+    const dataTable = eachAnimalType.map(animalType => {
       let value = {
         AnimalType: animalType.AnimalType.AnimalTypeName,
         Total: animalType.CountAnimalType
       }
       return value;
     })
-    const columns = [{ order: 1, colName: 'ประเภท', colKey: 'AnimalType' },{ order: 1, colName: 'จำนวน', colKey: 'Total' }]
+    const columns = [{ order: 1, colName: 'ประเภท', colKey: 'AnimalType' }, { order: 1, colName: 'จำนวน', colKey: 'Total' }]
     return (
       <div>
         <Card.Group textAlign="center">
@@ -72,6 +46,7 @@ class Home extends Component<any, any> {
           </Card>
         </Card.Group>
         <BaseTable data={dataTable} title={"ประเภทสัตว์แต่ละประเภท"} columns={columns} />
+        <TableGroupAnimal/>
       </div>
     );
   }

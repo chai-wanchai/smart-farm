@@ -52,7 +52,10 @@ export class SmartFarmManager {
         ['AnimalTypeId', 'animalTypeId']
       ]
       const option: FindOptions = {
-        include: [{ model: dbService.animalPic, as: 'pictures', attributes: ['ID', ['FileName', 'filename']] }],
+        include: [
+          { model: dbService.animalPic, as: 'pictures', attributes: ['ID', ['FileName', 'filename']] },
+          { model: dbService.animalType, as: 'AnimalType', attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName'] }
+        ],
         attributes: rename
       }
       let result: any = []

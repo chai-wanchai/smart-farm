@@ -1,6 +1,7 @@
 .pic-delete-btn {
-  background-color: white !important;
+  background-color: transparent !important;
   position: absolute;
+  color:#db2828 !important;
   z-index: 1;
   margin: 5px -10px !important;
   border-radius: 10px !important;

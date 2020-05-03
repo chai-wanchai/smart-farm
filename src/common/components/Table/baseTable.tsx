@@ -19,7 +19,6 @@ interface IProps {
 export default class BaseTable extends Component<IProps, any> {
 
   render() {
-    console.log(this.props)
     let renderColumn: any = []
     let renderData: any = []
     if (this.props.columns) {
@@ -37,7 +36,6 @@ export default class BaseTable extends Component<IProps, any> {
         } else {
           val = item[col.colKey]
         }
-        console.log(item)
         return <Table.Cell collapsing key={`${col.colKey}-${index}`}>{val}</Table.Cell>
       })
       return <Table.Row key={key}>{eachCol}</Table.Row>

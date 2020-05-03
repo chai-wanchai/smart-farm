@@ -3,6 +3,7 @@ import apiApp from './api/src/app'
 import Database from './api/src/common/database'
 import dbModel from './api/src/service/dbService'
 
+
 const port = parseInt(process.env.PORT || '5000', 10)
 const appNext = next({ dev: process.env.NODE_ENV === 'development' })
 const handle = appNext.getRequestHandler()

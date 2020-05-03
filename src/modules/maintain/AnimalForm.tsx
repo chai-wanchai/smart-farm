@@ -117,8 +117,11 @@ class AnimalForm extends Component<IProp, IState> {
     console.log(data);
     const delFile = data.data
     let value = this.state.value
+    if (delFile.ID) {
+      SmartFarmApi.deleteAnimalPicture(delFile.ID)
+    }
     value.pictures = _.reduce(value.pictures, (result: any, valueItem) => {
-      if (valueItem.filename !== delFile.filename && valueItem.ID !== delFile.ID) {
+      if (valueItem.filename !== delFile.filename || valueItem.ID !== delFile.ID) {
         result.push(valueItem)
       }
       return result
@@ -131,8 +134,9 @@ class AnimalForm extends Component<IProp, IState> {
       stateInint = { ...this.initState }
       stateInint.pictures = []
     } else {
-      stateInint = { data: this.state.data, value: this.props.value, mode: this.props.mode }
+      stateInint = { value: this.props.value, mode: this.props.mode }
     }
+    stateInint.data = this.state.data
     this.setState({ ...stateInint })
   }
   componentDidMount() {
@@ -203,7 +207,6 @@ class AnimalForm extends Component<IProp, IState> {
               value={value.dob}
               dateFormat="DD-MM-YYYY"
               iconPosition="left"
-              closable={true}
               onChange={this.handleChange}
               localization='th'
               duration={10}
@@ -237,13 +240,10 @@ class AnimalForm extends Component<IProp, IState> {
 
           <Image.Group size="medium" className={styles['text-center']}>
             {value.pictures.map(item => {
-              return <div className={styles['pic-div']} key={item.filename}>
-                <Button type="button"
-                  icon="window close"
-                  className={styles['pic-delete-btn']}
-                  data={item}
-                  onClick={this.onDeletePicture}></Button>
-                <Image src={item.data} alt={item.filename} rounded />
+              const showDeletePic = mode === 'edit' ?
+                { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
+              return <div className={styles['pic-div']} key={item.ID}>
+                <Image src={item.data} alt={item.ID} rounded label={showDeletePic} />
               </div>
             })}
           </Image.Group>

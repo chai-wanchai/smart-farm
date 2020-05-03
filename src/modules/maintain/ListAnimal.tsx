@@ -37,7 +37,7 @@ export default class ListAnimal extends Component<IProps, any> {
           <Loader size='massive' active={isLoading}>กำลังโหลดข้อมูล....</Loader>
         </Dimmer>
         {data.map(item => {
-          return <AnimalCard data={item} mode={mode || 'view'} />
+          return <AnimalCard data={item} mode={mode || 'view'} key={item.barcode}/>
         })}
 
       </div>
