@@ -41,12 +41,15 @@ export default class AnimalCard extends Component<IProp, any> {
     const fileID = data.data.ID
     const result = await SmartFarmApi.deleteAnimalPicture(fileID)
     if (result.isSuccess) {
-      const data = await SmartFarmApi.getAnimalByBarcode(this.state.barcode)
-      this.setState({ ...data })
+      const data = await SmartFarmApi.getAnimalByBarcode(this.state.value.barcode)
+      data.pictures = data.pictures.map(item => {
+        return { data: `/api/v1/animal/pictures/${data.barcode}/${item.ID}/${item.filename}`, ID: item.ID }
+      })
+      this.setState({ value: data })
     }
   }
   async onDeleteAnimal(event, data) {
-    const result = await SmartFarmApi.deleteAnimal(this.state.barcode)
+    const result = await SmartFarmApi.deleteAnimal(this.state.value.barcode)
     if (result.isSuccess) {
       Router.reload()
     }
@@ -91,7 +94,7 @@ export default class AnimalCard extends Component<IProp, any> {
               เพศ {value.sex}
             </Label>
           </Card.Header>
-         
+
           <Card.Description>
 
             <p>รายละเอียด : {value.description}</p>

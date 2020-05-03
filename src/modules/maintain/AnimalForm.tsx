@@ -8,6 +8,9 @@ import Resizer from 'react-image-file-resizer';
 import moment from 'moment';
 import 'moment/locale/th';
 import Router from 'next/router';
+import Swal from 'sweetalert2'
+import * as Popup from '../../common/components/Popup/Popup';
+import { ErrorHandle } from '../../common/Errorhandle';
 
 interface IProp {
   value?: any,
@@ -59,26 +62,34 @@ class AnimalForm extends Component<IProp, IState> {
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
-    let value = this.state.value
-    if(moment(value.dob).isValid()){
-      value.dob = moment(value.dob).format()
-    }else{
-      value.dob = moment().format()
+    Popup.Loading()
+    try {
+      let value = this.state.value
+      if (moment(value.dob).isValid()) {
+        value.dob = moment(value.dob).format()
+      } else {
+        value.dob = moment().format()
+      }
+      let result = null
+      if (this.props.mode === 'create') {
+        result = await SmartFarmApi.saveAnimal(value)
+        Router.push('/home')
+      } else {
+        value.pictures = _.reduce(value.pictures, (dataResult: any, item) => {
+          if (item.filename) {
+            dataResult.push(item)
+          }
+          return dataResult
+        }, [])
+        result = await SmartFarmApi.updateAnimalInfo(value)
+        Router.push('/maintain/animal/edit')
+      }
+      Popup.Close()
+      //Router.reload()
+    } catch (error) {
+      console.log(error)
+      Popup.ShowError(JSON.stringify(error))
     }
-    
-    let result = null
-    if (this.props.mode === 'create') {
-      result = await SmartFarmApi.saveAnimal(value)
-    } else {
-      value.pictures = _.reduce(value.pictures, (dataResult: any, item) => {
-        if (item.filename) {
-          dataResult.push(item)
-        }
-        return dataResult
-      }, [])
-      result = await SmartFarmApi.updateAnimalInfo(value)
-    }
-    Router.reload()
 
   }
   handleUploadFileChange(e) {

@@ -3,6 +3,7 @@ import animal from '../service/dbService/sf_animal'
 import { ErrorHandle } from '../common/errorHandle'
 import moment from 'moment'
 import { Model, FindOptions, FindAttributeOptions, UpdateOptions } from 'sequelize/types'
+import sequelize from 'sequelize'
 export class SmartFarmManager {
   async getAnimalsType() {
     try {
@@ -31,8 +32,14 @@ export class SmartFarmManager {
       })
     }
   }
-  async findAnimalType() {
-
+  async findAnimalTypeID(data) {
+    let animalType = { ID: data.animalTypeId }
+    if (data.animalTypeId === 0 && data.animalTypeOther) {
+      const animalTypeResult = await dbService.animalType.findOrCreate(
+        { where: { AnimalTypeName: data.animalTypeOther }, defaults: { AnimalTypeName: data.animalTypeOther } })
+      animalType.ID = animalTypeResult[0].ID
+    }
+    return animalType
   }
   async getAnimals(barcode?: string) {
     try {
@@ -78,12 +85,13 @@ export class SmartFarmManager {
   }
   async createAnimal(data) {
     try {
+      const animalType = await this.findAnimalTypeID(data)
       const insertData = {
         Barcode: data.barcode,
         AnimalName: data.name,
-        //DOB: data.dob,
+        DOB: data.dob,
         Sex: data.sex,
-        AnimalTypeId: data.animalTypeId,
+        AnimalTypeId: animalType.ID,
         Description: data.description
       }
       const result = await dbService.animal.create(insertData)
@@ -96,12 +104,7 @@ export class SmartFarmManager {
   }
   async updateAnimal(data) {
     try {
-      let animalType = { ID: data.animalTypeId }
-      if (data.animalTypeId === 0 && data.animalTypeOther) {
-        const animalTypeResult = await dbService.animalType.findOrCreate(
-          { where: { AnimalTypeName: data.animalTypeOther }, defaults: { AnimalTypeName: data.animalTypeOther } })
-        animalType.ID = animalTypeResult[0].ID
-      }
+      const animalType = await this.findAnimalTypeID(data)
       const insertData = {
         Barcode: data.barcode,
         AnimalName: data.name,
@@ -151,6 +154,28 @@ export class SmartFarmManager {
         result.isSuccess = false
       }
       return result
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err
+    }
+  }
+  async getSummaryFarm() {
+    try {
+      const totalAnimal = await dbService.animal.count()
+      const totalAnimalType = await dbService.animalType.count()
+      const EachAnimalType = await dbService.animal.findAll({
+
+        attributes: ['AnimalTypeId', [sequelize.fn('COUNT', sequelize.col('SF_Animal.AnimalTypeId')), 'CountAnimalType']],
+        include: [
+          {
+            model: dbService.animalType,
+            as: 'AnimalType',
+            attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName']
+          }
+        ]
+        , group: ['SF_Animal.AnimalTypeId', 'AnimalType.ID'],
+      })
+      return { eachAnimalType: EachAnimalType, totalAnimal, totalAnimalType }
     } catch (error) {
       const err = new ErrorHandle(error)
       throw err

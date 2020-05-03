@@ -1,4 +1,4 @@
-import next from 'next'
+import next from 'next';
 import apiApp from './api/src/app'
 import Database from './api/src/common/database'
 import dbModel from './api/src/service/dbService'
@@ -14,6 +14,12 @@ appNext.prepare().then(() => {
 
   // Create express server
   const server = apiApp
+  server.get('/maintain/animal/:mode', (req, res) => {
+    renderPage(req, res, '/maintain/animal',Object.assign(req.params, {
+      mode: req.params.mode,
+      asPath: `/maintain/animal/${req.params.mode}`
+    }));
+  })
   server.all('*', (req, res) => handle(req, res))
 
   server.listen(port, err => {

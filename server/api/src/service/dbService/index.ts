@@ -45,7 +45,7 @@ role.belongsTo(client, { foreignKey: 'roleId' })
 client.hasMany(permission, { foreignKey: 'clientId' })
 permission.belongsTo(client, { foreignKey: 'permissionId' })
 /// ------------------- End Relationship Many-To-Many -----------------------------////
-animalType.hasOne(animal, { foreignKey: 'Barcode' })
+animalType.hasOne(animal, { foreignKey: 'Barcode',as:'Animal' })
 animal.belongsTo(animalType, { foreignKey: 'AnimalTypeId', as: 'AnimalType' })
 animal.hasMany(animalHistory, { foreignKey: 'Barcode' })
 animalHistory.hasMany(animal, { foreignKey: 'Barcode' })

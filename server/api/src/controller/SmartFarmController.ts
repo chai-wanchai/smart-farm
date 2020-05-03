@@ -99,3 +99,12 @@ export async function deleteAnimalsPicture(req: Request, res: Response, next: Ne
 		err.sendErrorResponse(res)
 	}
 }
+export async function getSummaryFarm(req: Request, res: Response, next: NextFunction) {
+	try {
+		const result = await manager.smartfarm.getSummaryFarm()
+		res.json(result)
+	} catch (error) {
+		const err = new ErrorHandle(error)
+		err.sendErrorResponse(res)
+	}
+}

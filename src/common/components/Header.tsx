@@ -21,7 +21,7 @@ export default class HeaderLayout extends React.Component<any, IState> {
 				{ menuId: 1, menuName: 'หน้าแรก', url: '/home', isActive: false },
 				{ menuId: 2, menuName: 'บันทึกประวัติ', url: '/maintain/history', isActive: false },
 				{
-					menuId: 3, menuName: 'จัดการข้อมูลสัตว์', url: '/maintain/animal', isActive: false,
+					menuId: 3, menuName: 'จัดการข้อมูลสัตว์', url: '/maintain/animal/edit', isActive: false,
 					// menuChildren: [
 					// 	{ menuId: 4, menuName: 'เพิ่มข้อมูลสัตว์', url: '/maintain/animal/create', isActive: false },
 					// 	{ menuId: 4, menuName: 'แก้ไขข้อมูลสัตว์', url: '/maintain/animal/edit', isActive: false }

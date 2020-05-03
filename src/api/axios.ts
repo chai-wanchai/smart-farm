@@ -10,7 +10,7 @@ export default (function () {
         return config;
     })
     axios.interceptors.response.use(async (response) => { return response }, async (error) => {
-        console.log(error.config)
+        
         // const originalRequest = error.config
         // const serverCallUrl = new URL(originalRequest.url)
         // const status = error.response.status
