@@ -20,6 +20,15 @@ export async function getAnimalsType(req: Request, res: Response, next: NextFunc
 		err.sendErrorResponse(res)
 	}
 }
+export async function getFormDetails(req: Request, res: Response, next: NextFunction) {
+	try {
+		const result: any = await manager.smartfarm.getFormDetails()
+		res.json(result)
+	} catch (error) {
+		const err = new ErrorHandle(error)
+		err.sendErrorResponse(res)
+	}
+}
 export async function getAnimalsByBarcode(req: Request, res: Response, next: NextFunction) {
 	try {
 		const barcode = req.params.barcode

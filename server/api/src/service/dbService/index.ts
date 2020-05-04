@@ -10,6 +10,7 @@ import animalType from './sf_animal_type'
 import animal from './sf_animal'
 import animalHistory from './sf_animal_history'
 import animalPic from './sf_animal_picture'
+import formDetails from './sf_form_details'
 /// ------------------- Many-To-Many Feild -----------------------------------////
 const isActive = { isActive: { type: DataTypes.BOOLEAN, defaultValue: true } }
 const clientConfigSchema = {
@@ -21,6 +22,9 @@ const clientConfigSchema = {
   updatedBy: {
     type: DataTypes.INTEGER
   },
+}
+const sf_animal_details = {
+  value: { type: DataTypes.TEXT }
 }
 /// ------------------- Relationship One-To-Many -----------------------------////
 
@@ -45,14 +49,17 @@ role.belongsTo(client, { foreignKey: 'roleId' })
 client.hasMany(permission, { foreignKey: 'clientId' })
 permission.belongsTo(client, { foreignKey: 'permissionId' })
 /// ------------------- End Relationship Many-To-Many -----------------------------////
-animalType.hasOne(animal, { foreignKey: 'Barcode',as:'Animal' })
+animalType.hasOne(animal, { foreignKey: 'Barcode', as: 'Animal' })
 animal.belongsTo(animalType, { foreignKey: 'AnimalTypeId', as: 'AnimalType' })
 animal.hasMany(animalHistory, { foreignKey: 'Barcode' })
 animalHistory.hasMany(animal, { foreignKey: 'Barcode' })
 animal.hasMany(animalPic, { foreignKey: 'Barcode', as: 'pictures' })
 animalPic.hasMany(animal, { foreignKey: 'Barcode' })
-
-
+const AnimalDetails = <UserModelType>Database.connection.define('SF_Animal_Details', sf_animal_details, { tableName: 'SF_Animal_Details' });
+animal.belongsToMany(formDetails, { through: { model: AnimalDetails, unique: true }, foreignKey: { name: 'barcode' }, uniqueKey: 'barcode' });
+formDetails.belongsToMany(animal, { through: { model: AnimalDetails, unique: true }, foreignKey: { name: 'detailsId' }, uniqueKey: 'detailsId' });
+// AnimalDetails.hasMany(animal,{ foreignKey: 'barcode'})
+animal.hasMany(AnimalDetails,{ foreignKey: 'barcode',as:'details'})
 export const dbModel = {
   client: client,
   role: role,
@@ -64,6 +71,8 @@ export const dbModel = {
   animal: animal,
   animalHistory: animalHistory,
   animalPic: animalPic,
-  animalType: animalType
+  animalType: animalType,
+  animalDetails: AnimalDetails,
+  formDetails: formDetails
 }
 export default dbModel

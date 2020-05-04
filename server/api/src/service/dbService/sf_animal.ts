@@ -17,6 +17,16 @@ export const Attributes: ModelAttributes = {
   Description: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  father: {
+    type: DataTypes.STRING
+  },
+  mother: {
+    type: DataTypes.STRING
   }
 }
 

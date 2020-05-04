@@ -1,5 +1,6 @@
 import axios from './axios'
 import { ErrorHandle } from '../common/Errorhandle'
+import { IFormDetails } from '../models/SmartFarm'
 class SmartFarmApi {
   async getAnimalsType() {
     try {
@@ -9,7 +10,15 @@ class SmartFarmApi {
       const err = new ErrorHandle(error)
       throw err.getError()
     }
-
+  }
+  async getFormDetails():Promise<IFormDetails[]> {
+    try {
+      const response = await axios.get(`/api/v1/animal/form/details`)
+      return response.data
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err.getError()
+    }
   }
   async saveAnimal(data: FormData): Promise<any> {
     try {

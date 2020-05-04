@@ -9,6 +9,7 @@ router.get('/animal/view/:barcode',Controller.getAnimalsByBarcode)
 router.delete('/animal/:barcode',Controller.deleteAnimalsByBarcode)
 
 router.get('/animal/type',Controller.getAnimalsType)
+router.get('/animal/form/details',Controller.getFormDetails)
 router.get('/animal/pictures/:barcode/:id/:filename',Controller.getAnimalsPicture)
 router.delete('/animal/pictures/:id',Controller.deleteAnimalsPicture)
 

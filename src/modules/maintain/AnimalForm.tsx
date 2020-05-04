@@ -1,5 +1,5 @@
 import React, { Component, RefObject } from 'react';
-import { Card, Form, Input, Image, Button, Icon, Container } from 'semantic-ui-react';
+import { Card, Form, Input, Image, Button, Icon, Container, Divider } from 'semantic-ui-react';
 import * as _ from 'lodash';
 import { DateInput } from 'semantic-ui-calendar-react';
 import styles from './AnimalForm.module.css'
@@ -26,6 +26,7 @@ class AnimalForm extends Component<IProp, IState> {
   initState: IState = {
     mode: 'create',
     data: {
+      formDetails: [],
       animalType: [],
       sex: [{ sex: 'MALE', sexName: 'เพศผู้' }, { sex: 'FEMALE', sexName: 'เพศเมีย' }, { sex: 'NULL', sexName: 'ไม่ระบุ' }]
     },
@@ -37,7 +38,10 @@ class AnimalForm extends Component<IProp, IState> {
       description: '',
       dob: '',
       sex: '',
-      pictures: []
+      father: '',
+      mother: '',
+      pictures: [],
+      details: []
     }
   }
   constructor(props) {
@@ -48,17 +52,40 @@ class AnimalForm extends Component<IProp, IState> {
     this.onReset = this.onReset.bind(this)
     this.onDeletePicture = this.onDeletePicture.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.onClickAddMoreDetails = this.onClickAddMoreDetails.bind(this)
     this.refsFileUpload = React.createRef();
   }
   async fetchStaticData() {
-    const data = await SmartFarmApi.getAnimalsType()
-    data.push({ animalTypeId: 0, animalTypeName: 'อื่นๆ' })
-    this.setState({ data: { ...this.state.data, animalType: data } })
+    let StateData = this.state.data
+    const animalsType = await SmartFarmApi.getAnimalsType()
+    const formDetails = await SmartFarmApi.getFormDetails()
+    animalsType.push({ animalTypeId: 0, animalTypeName: 'อื่นๆ' })
+    formDetails.push({ detailsId: 0, detailTypeName: "อื่นๆ", description: "" })
+    StateData.animalType = animalsType
+    StateData.formDetails = formDetails
+    this.setState({ data: StateData })
   }
   handleChange(e, data) {
-    const key = data.name;
+    let key = data.name;
     let value = data.value;
-    let stateValue = { ...this.state.value, [key]: value };
+    let stateValue = _.clone(this.state.value);
+    if (key.includes('detail')) {
+      const index = parseInt(key.split('-')[1])
+      key = key.split('-')[0].split(':')[1]
+      let findKey = Object.assign({}, _.find(this.state.data.formDetails, { detailsId: data.ids || value }))
+      if (!_.isEmpty(findKey)) {
+        if (key === 'detailsId') {
+          stateValue.details[index] = findKey
+        } else {
+          stateValue.details[index][key] = value
+        }
+      } else {
+        stateValue.details[index][key] = value
+      }
+    } else {
+      stateValue[key] = value
+    }
+
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
@@ -139,6 +166,11 @@ class AnimalForm extends Component<IProp, IState> {
     stateInint.data = this.state.data
     this.setState({ ...stateInint })
   }
+  onClickAddMoreDetails(e, Eventdata) {
+    let valueState = this.state.value
+    valueState.details.push({ detailsId: 0, detailTypeName: "อื่นๆ", description: "", value: "" })
+    this.setState({ value: valueState })
+  }
   componentDidMount() {
     if (this.props.value) {
       let value = this.props.value
@@ -151,6 +183,7 @@ class AnimalForm extends Component<IProp, IState> {
     console.log(this.state);
     let animalType = data.animalType.map(item => { return { text: item.animalTypeName, value: item.animalTypeId } })
     let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
+    let formDetails = data.formDetails.map(item => { return { text: item.detailTypeName, value: item.detailsId } })
     return (
       <div style={{ padding: '1rem' }}>
         <Form onSubmit={this.handleSubmit}>
@@ -198,8 +231,22 @@ class AnimalForm extends Component<IProp, IState> {
               name='sex'
               onChange={this.handleChange}>
             </Form.Select>
+            <Form.Input
+              placeholder="พ่อพันธุ์"
+              label="พ่อพันธุ์"
+              value={value.father}
+              name='father'
+              onChange={this.handleChange}>
+            </Form.Input>
+            <Form.Input
+              placeholder="แม่พันธุ์"
+              label="แม่พันธุ์"
+              value={value.mother}
+              name='mother'
+              onChange={this.handleChange}>
+            </Form.Input>
           </Form.Group>
-          <Form.Field>
+          <Form.Group>
             <DateInput
               name="dob"
               placeholder="วันที่เกิด"
@@ -211,7 +258,64 @@ class AnimalForm extends Component<IProp, IState> {
               localization='th'
               duration={10}
             />
+            <DateInput
+              name="buyDate"
+              placeholder="วันที่ซื้อเข้าฟาร์ม"
+              label="วันที่ซื้อเข้าฟาร์ม"
+              value={value.buyDate}
+              dateFormat="DD-MM-YYYY"
+              iconPosition="left"
+              onChange={this.handleChange}
+              localization='th'
+              duration={10}
+            />
+          </Form.Group>
+          <Form.Field>
+            <Button
+              color='blue'
+              size='mini'
+              type="button"
+              content="เพิ่มข้อมูลอื่นๆ"
+              labelPosition="left"
+              icon="edit"
+              onClick={this.onClickAddMoreDetails}
+            />
           </Form.Field>
+          {value.details.map((item, index) => {
+            return <>
+              <Form.Group key={index}>
+                <Form.Select
+                  placeholder="ประเภทข้อมูล"
+                  label="ประเภทข้อมูล"
+                  options={formDetails}
+                  value={item.detailsId}
+                  key={`detail:detailsId-${index}`}
+                  name={`detail:detailsId-${index}`}
+                  onChange={(this.handleChange)}>
+                </Form.Select>
+                {item.detailsId === 0 ?
+                  <Form.Input
+                    placeholder="ระบุประเภทข้อมูล"
+                    label="ระบุประเภทข้อมูล"
+                    value={value.animalTypeOther}
+                    ids={item.detailsId}
+                    key={`detail:detailTypeName-${index}`}
+                    name={`detail:detailTypeName-${index}`}
+                    onChange={this.handleChange}>
+                  </Form.Input> : null}
+                <Form.TextArea
+                  placeholder={item.detailTypeName}
+                  label={item.detailTypeName}
+                  value={item.value}
+                  ids={item.detailsId}
+                  key={`detail:value-${index}`}
+                  name={`detail:value-${index}`}
+                  onChange={this.handleChange}>
+                </Form.TextArea>
+              </Form.Group>
+              <Divider />
+            </>
+          })}
           <Form.TextArea
             placeholder="รายละเอียด"
             label="รายละเอียด"

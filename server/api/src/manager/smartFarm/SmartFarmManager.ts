@@ -1,6 +1,6 @@
-import dbService from '../service/dbService'
-import animal from '../service/dbService/sf_animal'
-import { ErrorHandle } from '../common/errorHandle'
+import dbService from '../../service/dbService'
+import animal from '../../service/dbService/sf_animal'
+import { ErrorHandle } from '../../common/errorHandle'
 import moment from 'moment'
 import { Model, FindOptions, FindAttributeOptions, UpdateOptions } from 'sequelize/types'
 import sequelize from 'sequelize'
@@ -19,6 +19,20 @@ export class SmartFarmManager {
       throw err
     }
   }
+  async getFormDetails() {
+    try {
+      const rename: FindAttributeOptions = [
+        ['ID', 'detailsId'],
+        ['DetailType', 'detailTypeName'],
+        ['DetailDescription', 'description']
+      ]
+      const result = await dbService.formDetails.findAll({ attributes: rename })
+      return result
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err
+    }
+  }
   async addAnimalPicture(data: any) {
     if (data.pictures.length > 0) {
       data.pictures.forEach(async (item) => {
@@ -31,6 +45,42 @@ export class SmartFarmManager {
         await dbService.animalPic.create(insertPic)
       })
     }
+  }
+  async addFormDetails(data: any) {
+    let insert = []
+    console.log(data)
+    if (data.details.length > 0) {
+      insert = data.details.map(async (item) => {
+        if (item.detailsId === 0) {
+          const details = await dbService.formDetails.findOrCreate(
+            {
+              where: { DetailType: item.detailTypeName },
+              defaults: { DetailType: item.detailTypeName, DetailDescription: item.description }
+            })
+          item.detailsId = details[0].ID
+        }
+        return item
+      })
+      insert = await Promise.all(insert)
+      console.log(insert)
+    }
+    return insert
+  }
+  async addAnimalDetails(data: any) {
+    let inserted: any = await this.addFormDetails(data)
+    let result: any = []
+    if (inserted.length > 0) {
+      inserted = inserted.map(async (item) => {
+        const dataUpsert = { barcode: data.barcode, detailsId: item.detailsId, value: item.value }
+        await dbService.animalDetails.upsert(dataUpsert)
+      })
+      // console.log(inserted)
+      // result = await dbService.animalDetails.bulkCreate(inserted, {
+      //   fields: ["barcode", "detailsId"],
+      //   updateOnDuplicate: ["barcode", "detailsId"]
+      // })
+    }
+    return result
   }
   async findAnimalTypeID(data) {
     let animalType = { ID: data.animalTypeId }
@@ -54,7 +104,8 @@ export class SmartFarmManager {
       const option: FindOptions = {
         include: [
           { model: dbService.animalPic, as: 'pictures', attributes: ['ID', ['FileName', 'filename']] },
-          { model: dbService.animalType, as: 'AnimalType', attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName'] }
+          { model: dbService.animalType, as: 'AnimalType', attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName'] },
+          { model: dbService.animalDetails,as:'details'}
         ],
         attributes: rename
       }
@@ -122,6 +173,7 @@ export class SmartFarmManager {
       }
       const result = await dbService.animal.update(insertData, option)
       this.addAnimalPicture(data)
+      this.addAnimalDetails(data)
       return result[1]
     } catch (error) {
       const err = new ErrorHandle(error)
