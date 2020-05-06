@@ -1,14 +1,16 @@
 import { Sequelize } from 'sequelize'
 import dotenv from 'dotenv'
 dotenv.config()
+const sslEnabled = process.env.NODE_ENV === 'development' ? false : true
 var pg = require('pg');
-pg.defaults.ssl = true;
+pg.defaults.ssl = sslEnabled;
 export interface DBInterface {
   connection: Sequelize;
 }
+/// see at https://vivacitylabs.com/setup-typescript-sequelize/
 export class Database {
   private connectionConfig: any = null
-  public connection: Sequelize = new Sequelize(`${process.env.DATABASE_URL}`, { ssl: true, logging: false })
+  public connection: Sequelize = new Sequelize(`${process.env.DATABASE_URL}`, { ssl: sslEnabled, logging: false })
   constructor(connectionString?: string, database?: string, username?: string, password?: string, host?: string, dialect?: string) {
     let stringConntection = process.env.DATABASE_URL as string;
     if (connectionString) {
