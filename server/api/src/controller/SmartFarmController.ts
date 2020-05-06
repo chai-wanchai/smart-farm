@@ -69,7 +69,8 @@ export async function updateAnimal(req: Request, res: Response, next: NextFuncti
 }
 export async function recordHistoryAnimal(req: Request, res: Response, next: NextFunction) {
 	try {
-		res.json({})
+		const result: any = await manager.smartfarm.createAnimalHistory(req.body)
+		res.json(result)
 	} catch (error) {
 		const err = new ErrorHandle(error)
 		err.sendErrorResponse(res)
