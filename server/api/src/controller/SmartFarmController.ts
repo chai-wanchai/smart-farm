@@ -82,8 +82,8 @@ export async function getAnimalsPicture(req: Request, res: Response, next: NextF
 		const id = parseInt(req.params.id)
 		const filename = req.params.filename
 		const result = await manager.smartfarm.getAnimalPictures(id, barcode, filename)
-		if (result.Picture) {
-			const imgBase64 = Buffer.from(result.Picture).toString()
+		if (result && result.picture) {
+			const imgBase64 = Buffer.from(result.picture).toString()
 			const imgMeta = imgBase64.split(",");
 			const imgSend = Buffer.from(imgMeta[1], 'base64');
 			res.writeHead(200, {

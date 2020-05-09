@@ -11,7 +11,7 @@ export class ClientManager {
         createdBy: createdBy,
         description: description
       }
-      const result = await dbService.client.create(data)
+      const result = await dbService.dbModelAuth.client.create(data)
       return result
     } catch (error) {
       throw error
@@ -25,7 +25,7 @@ export class ClientManager {
         description: description,
         isActive: isActive
       }
-      const result = await dbService.client.update(data, { where: { clientId: clientId }, returning: true })
+      const result = await dbService.dbModelAuth.client.update(data, { where: { clientId: clientId }, returning: true })
       return result[1] || result
     } catch (error) {
       throw error
@@ -33,7 +33,7 @@ export class ClientManager {
   }
   async deleteClient(clientId: number) {
     try {
-      const resultDb = await dbService.client.destroy({ where: { clientId: clientId } })
+      const resultDb = await dbService.dbModelAuth.client.destroy({ where: { clientId: clientId } })
       let result = {
         deleteSuccess: true,
         totalRows: resultDb
@@ -48,7 +48,7 @@ export class ClientManager {
   }
   async getAllClient() {
     try {
-      const resultDb = await dbService.client.findAll()
+      const resultDb = await dbService.dbModelAuth.client.findAll()
       return resultDb
     } catch (error) {
       throw error
@@ -63,7 +63,7 @@ export class ClientManager {
         createdBy: createdBy,
         isActive: isActive
       }
-      const resultDb = await dbService.clientConfig.create(data)
+      const resultDb = await dbService.dbModelAuth.clientConfig.create(data)
       return resultDb
     } catch (error) {
       throw error
@@ -76,7 +76,7 @@ export class ClientManager {
         updatedBy: updatedBy,
         isActive: isActive
       }
-      const resultDb = await dbService.clientConfig.update(data, { where: { configCode: configCode, clientId: clientId, }, returning: true })
+      const resultDb = await dbService.dbModelAuth.clientConfig.update(data, { where: { configCode: configCode, clientId: clientId, }, returning: true })
       return resultDb
     } catch (error) {
       throw error

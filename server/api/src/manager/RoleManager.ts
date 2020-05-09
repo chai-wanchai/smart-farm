@@ -11,7 +11,7 @@ export class RoleManager {
       createdBy: createdBy,
       updatedBy: createdBy
     }
-    const result = await dbService.role.upsert(roleData, { returning: true })
+    const result = await dbService.dbModelAuth.role.upsert(roleData, { returning: true })
     return result;
   }
   public async createUserRole(userId: number, roleId: number) {
@@ -19,11 +19,11 @@ export class RoleManager {
       roleId: roleId,
       userId: userId
     }
-    const result = await dbService.role.upsert(userRole, { returning: true })
+    const result = await dbService.dbModelAuth.role.upsert(userRole, { returning: true })
     return result;
   }
   public async checkRole(roleCode: string) {
-    const result = await dbService.role.findOne({ where: { roleCode: roleCode } })
+    const result = await dbService.dbModelAuth.role.findOne({ where: { roleCode: roleCode } })
     return result;
   }
 }

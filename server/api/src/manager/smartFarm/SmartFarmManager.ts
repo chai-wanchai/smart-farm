@@ -1,18 +1,21 @@
 import dbService from '../../service/dbService'
+import dbModel from '../../model'
 import animal from '../../service/dbService/sf_animal'
 import { ErrorHandle } from '../../common/errorHandle'
 import moment from 'moment'
 import { Model, FindOptions, FindAttributeOptions, UpdateOptions } from 'sequelize/types'
 import sequelize from 'sequelize'
+import { IAnimal } from '../../model/Animal'
 export class SmartFarmManager {
   async getAnimalsType() {
     try {
       const rename: FindAttributeOptions = [
-        ['ID', 'animalTypeId'],
-        ['AnimalTypeName', 'animalTypeName'],
-        ['Description', 'description']
+        ['id', 'animalTypeId'],
+        'animalTypeName',
+        'description',
+        'animalSpeciesName'
       ]
-      const result = await dbService.animalType.findAll({ attributes: rename })
+      const result = await dbService.dbModelSmartFarm.animalTypes.findAll({ attributes: rename })
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -26,43 +29,42 @@ export class SmartFarmManager {
         ['DetailType', 'detailTypeName'],
         ['DetailDescription', 'description']
       ]
-      const result = await dbService.formDetails.findAll({ attributes: rename })
+      const result = await dbService.dbModelSmartFarm.animalDetails.findAll({ attributes: rename })
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
       throw err
     }
   }
-  async addAnimalPicture(data: any) {
+  async addAnimalPicture(data: any, pictureType?: string) {
     if (data.pictures.length > 0) {
       data.pictures.forEach(async (item) => {
         const buff = new Buffer(item.data)
         const insertPic = {
-          Barcode: data.barcode,
-          Picture: buff,
-          FileName: item.filename
+          barcode: data.barcode,
+          picture: buff,
+          fileName: item.filename,
+          pictureType: pictureType
         }
-        await dbService.animalPic.create(insertPic)
+        await dbService.dbModelSmartFarm.animalPicture.create(insertPic)
       })
     }
   }
   async addFormDetails(data: any) {
     let insert = []
-    console.log(data)
     if (data.details.length > 0) {
       insert = data.details.map(async (item) => {
-        if (item.detailsId === 0) {
-          const details = await dbService.formDetails.findOrCreate(
+        if (item.detailId === 0) {
+          const details = await dbService.dbModelSmartFarm.animalDetailsTypes.findOrCreate(
             {
-              where: { DetailType: item.detailTypeName },
-              defaults: { DetailType: item.detailTypeName, DetailDescription: item.description }
+              where: { detailType: item.detailTypeName },
+              defaults: { detailType: item.detailTypeName, detailDescription: item.description }
             })
-          item.detailsId = details[0].ID
+          item.detailId = details[0].id
         }
         return item
       })
       insert = await Promise.all(insert)
-      console.log(insert)
     }
     return insert
   }
@@ -71,49 +73,35 @@ export class SmartFarmManager {
     let result: any = []
     if (inserted.length > 0) {
       inserted = inserted.map(async (item) => {
-        const dataUpsert = { barcode: data.barcode, detailsId: item.detailsId, value: item.value }
-        await dbService.animalDetails.upsert(dataUpsert)
+        const dataUpsert = { barcode: data.barcode, detailTypeId: item.detailId, text: item.value }
+        await dbService.dbModelSmartFarm.animalDetails.upsert(dataUpsert)
       })
-      // console.log(inserted)
-      // result = await dbService.animalDetails.bulkCreate(inserted, {
-      //   fields: ["barcode", "detailsId"],
-      //   updateOnDuplicate: ["barcode", "detailsId"]
-      // })
     }
     return result
   }
   async findAnimalTypeID(data) {
-    let animalType = { ID: data.animalTypeId }
+    let animalType = { id: data.animalTypeId }
     if (data.animalTypeId === 0 && data.animalTypeOther) {
-      const animalTypeResult = await dbService.animalType.findOrCreate(
-        { where: { AnimalTypeName: data.animalTypeOther }, defaults: { AnimalTypeName: data.animalTypeOther } })
-      animalType.ID = animalTypeResult[0].ID
+      const animalTypeResult = await dbService.dbModelSmartFarm.animalTypes.findOrCreate(
+        { where: { animalTypeName: data.animalTypeOther }, defaults: { animalTypeName: data.animalTypeOther } })
+      animalType.id = animalTypeResult[0].id
     }
     return animalType
   }
   async getAnimals(barcode?: string) {
     try {
-      const rename: FindAttributeOptions = [
-        ['AnimalName', 'name'],
-        ['Barcode', 'barcode'],
-        ['DOB', 'dob'],
-        ['Description', 'description'],
-        ['Sex', 'sex'],
-        ['AnimalTypeId', 'animalTypeId']
-      ]
       const option: FindOptions = {
         include: [
-          { model: dbService.animalPic, as: 'pictures', attributes: ['ID', ['FileName', 'filename']] },
-          { model: dbService.animalType, as: 'AnimalType', attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName'] },
-          { model: dbService.animalDetails,as:'details'}
-        ],
-        attributes: rename
+          { model: dbService.dbModelSmartFarm.animalPicture, as: 'pictures', attributes: ['id', 'pictureType', 'fileName', 'barcode'] },
+          { model: dbService.dbModelSmartFarm.animalTypes, as: 'animalType' },
+          { model: dbService.dbModelSmartFarm.animalDetails, as: 'animalDetails' }
+        ]
       }
       let result: any = []
       if (barcode) {
-        result = await dbService.animal.findByPk(barcode, option)
+        result = await dbService.dbModelSmartFarm.animal.findByPk(barcode, option)
       } else {
-        result = await dbService.animal.findAll(option)
+        result = await dbService.dbModelSmartFarm.animal.findAll(option)
       }
       return result
     } catch (error) {
@@ -123,7 +111,7 @@ export class SmartFarmManager {
   }
   async deleteAnimalsByBarcode(barcode: string) {
     try {
-      const data = await dbService.animal.destroy({ where: { Barcode: barcode } })
+      const data = await dbService.dbModelSmartFarm.animal.destroy({ where: { barcode: barcode } })
       let result = {
         isSuccess: true,
         deleted: barcode
@@ -141,15 +129,19 @@ export class SmartFarmManager {
     try {
       const animalType = await this.findAnimalTypeID(data)
       const insertData = {
-        Barcode: data.barcode,
-        AnimalName: data.name,
+        barcode: data.barcode,
+        animalName: data.name,
         DOB: data.dob,
-        Sex: data.sex,
-        AnimalTypeId: animalType.ID,
-        Description: data.description
+        sex: data.sex,
+        animalTypeId: animalType.id,
+        description: data.description,
+        father: data.father,
+        mother: data.mother,
+        buyDate: data.buyDate
       }
-      const result = await dbService.animal.create(insertData)
-      this.addAnimalPicture(data)
+      const result = await dbService.dbModelSmartFarm.animal.create(insertData)
+      this.addAnimalPicture(data, 'animal')
+      this.addAnimalDetails(data)
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -160,19 +152,19 @@ export class SmartFarmManager {
     try {
       const animalType = await this.findAnimalTypeID(data)
       const insertData = {
-        Barcode: data.barcode,
-        AnimalName: data.name,
-        AnimalTypeId: animalType.ID,
+        barcode: data.barcode,
+        animalName: data.name,
+        animalTypeId: animalType.id,
         DOB: data.dob,
-        Sex: data.sex,
-        Description: data.description
+        sex: data.sex,
+        description: data.description
       }
       const option: UpdateOptions = {
-        where: { Barcode: insertData.Barcode },
+        where: { barcode: insertData.barcode },
         returning: true
       }
-      const result = await dbService.animal.update(insertData, option)
-      this.addAnimalPicture(data)
+      const result = await dbService.dbModelSmartFarm.animal.update(insertData, option)
+      this.addAnimalPicture(data, 'animal')
       this.addAnimalDetails(data)
       return result[1]
     } catch (error) {
@@ -182,7 +174,7 @@ export class SmartFarmManager {
   }
   async createAnimalHistory(data) {
     try {
-      const result = await dbService.animalHistory.create(data)
+      const result = await dbService.dbModelSmartFarm.animalHistory.create(data)
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -191,7 +183,7 @@ export class SmartFarmManager {
   }
   async getAnimalPictures(ID: number, barcode: string, filename: string) {
     try {
-      const result = await dbService.animalPic.findOne({ where: { Barcode: barcode, FileName: filename, ID: ID } })
+      const result = await dbService.dbModelSmartFarm.animalPicture.findOne({ where: { barcode: barcode, fileName: filename, id: ID } })
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -200,7 +192,7 @@ export class SmartFarmManager {
   }
   async deleteAnimalPictures(ID: number) {
     try {
-      const data = await dbService.animalPic.destroy({ where: { ID: ID } })
+      const data = await dbService.dbModelSmartFarm.animalPicture.destroy({ where: { id: ID } })
       let result = {
         isSuccess: true,
         deleted: ID
@@ -216,19 +208,19 @@ export class SmartFarmManager {
   }
   async getSummaryFarm() {
     try {
-      const totalAnimal = await dbService.animal.count()
-      const totalAnimalType = await dbService.animalType.count()
-      const EachAnimalType = await dbService.animal.findAll({
+      const totalAnimal = await dbService.dbModelSmartFarm.animal.count()
+      const totalAnimalType = await dbService.dbModelSmartFarm.animal.count({ distinct: true, col: 'animalTypeId' })
+      const EachAnimalType = await dbService.dbModelSmartFarm.animal.findAll({
 
-        attributes: ['AnimalTypeId', [sequelize.fn('COUNT', sequelize.col('SF_Animal.AnimalTypeId')), 'CountAnimalType']],
+        attributes: ['animalTypeId', [sequelize.fn('COUNT', sequelize.col('Animal.animalTypeId')), 'countAnimalType']],
         include: [
           {
-            model: dbService.animalType,
-            as: 'AnimalType',
-            attributes: ['AnimalTypeName', 'Description', 'AnimalSpeciesName']
+            model: dbService.dbModelSmartFarm.animalTypes,
+            as: 'animalType',
+            attributes: ['animalTypeName', 'description', 'animalSpeciesName']
           }
         ]
-        , group: ['SF_Animal.AnimalTypeId', 'AnimalType.ID'],
+        , group: [sequelize.col('Animal.animalTypeId'), sequelize.col('animalType.id')]
       })
       return { eachAnimalType: EachAnimalType, totalAnimal, totalAnimalType }
     } catch (error) {

@@ -13,7 +13,7 @@ export class PermissiobManager {
         createdBy: createdBy,
         updatedBy: createdBy
       }
-      const result = await dbService.permission.upsert(permissionData, { returning: true })
+      const result = await dbService.dbModelAuth.permission.upsert(permissionData, { returning: true })
       return result;
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -22,16 +22,19 @@ export class PermissiobManager {
   }
   public async createRolePermission(roleCode: string, permissionCode: string) {
     const roleData = await Promise.all([
-      dbService.role.findOne({ where: { roleCode: roleCode }, attributes: ['roleId', 'roleCode', 'roleName'] }),
-      dbService.permission.findOne({ where: { permissionCode: permissionCode }, attributes: ['permissionId', 'permissionCode', 'permissionName'] })
+      dbService.dbModelAuth.role.findOne({ where: { roleCode: roleCode }, attributes: ['roleId', 'roleCode', 'roleName'] }),
+      dbService.dbModelAuth.permission.findOne({ where: { permissionCode: permissionCode }, attributes: ['permissionId', 'permissionCode', 'permissionName'] })
     ])
-    if (roleData[0] && roleData[1] && roleData[0].roleId && roleData[1].permissionId) {
-      const data: IRolePermission = {
-        roleId: roleData[0].roleId,
-        permissionId: roleData[1].permissionId
+    if (roleData[0] && roleData[1]) {
+      if (roleData[0].roleId && roleData[1].permissionId) {
+        const data: IRolePermission = {
+          roleId: roleData[0].roleId,
+          permissionId: roleData[1].permissionId
+        }
+        const result = await dbService.dbModelAuth.rolePermission.upsert(data, { returning: true })
+        return result;
       }
-      const result = await dbService.rolePermission.upsert(data, { returning: true })
-      return result;
+
     } else {
       const error = new CommonError()
       error.setCustomError(400, 'Invalid roleCode/permissionCode', 'INPUT_INVALID', roleData)
@@ -40,7 +43,7 @@ export class PermissiobManager {
   }
   public async checkPermissionByList(PermissionCode: Array<string>) {
     try {
-      const result = await dbService.permission.findAll({ where: { permissionCode: PermissionCode } });
+      const result = await dbService.dbModelAuth.permission.findAll({ where: { permissionCode: PermissionCode } });
       return result;
     } catch (error) {
       const err = new ErrorHandle(error)

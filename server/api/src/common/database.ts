@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize'
 import dotenv from 'dotenv'
+import createDbModel from '../model';
 dotenv.config()
 const sslEnabled = process.env.NODE_ENV === 'development' ? false : true
 var pg = require('pg');
@@ -24,12 +25,18 @@ export class Database {
     this.connection = new Sequelize(this.connectionConfig, { ssl: false, logging: false })
     this.connection.authenticate()
       .then(() => {
-        console.log('Connection has been established successfully.');
+        console.log('Connection has been established successfully.');        
       })
       .catch((err: any) => {
         console.error('Unable to connect to the database:\n', err);
       });
     return this.connection
+  }
+  public modelCreate(sequelize?: Sequelize) {
+    if(!sequelize){
+      sequelize = this.connection
+    }
+    return createDbModel(sequelize)
   }
 }
 const db = new Database(process.env.DATABASE_URL)

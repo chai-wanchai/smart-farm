@@ -3,6 +3,7 @@ import Database from '../../common/database'
 export const Attributes: ModelAttributes = {
   Barcode: {
     type: DataTypes.STRING,
+    unique: true,
     primaryKey: true
   },
   AnimalName: {

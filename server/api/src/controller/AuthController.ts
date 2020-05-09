@@ -7,6 +7,7 @@ import { ErrorHandle, IError, CommonError } from '../common/errorHandle';
 import { UserAttributes } from '../types/users'
 import { IToken } from '../types/token'
 import JWT  from '../common/jwt'
+import { IUsers } from '../model/Auth/User';
 
 export async function loginWithLine(req: Request, res: Response, next: NextFunction) {
   try {
@@ -21,7 +22,7 @@ export async function loginWithLine(req: Request, res: Response, next: NextFunct
       uid: userAccount.sub,
       idp: 'line'
     }
-    const user: UserAttributes = await UserManager.findUserOrCreate(dataUser)
+    const user: IUsers = await UserManager.findUserOrCreate(dataUser)
     const result = AuthManager.getTokenResult(user,client)
     res.status(200).json(result)
   } catch (error) {

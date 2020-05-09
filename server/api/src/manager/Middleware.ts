@@ -40,7 +40,7 @@ export class Middelware {
       }
       req.headers = commonValidation(schemaClient, req.headers, true)
       const { client_id, client_secret } = req.headers
-      const result = await dbService.client.findOne({ where: { clientId: client_id!, clientSecret: client_secret! } })
+      const result = await dbService.dbModelAuth.client.findOne({ where: { clientId: client_id!, clientSecret: client_secret! } })
       if (result) {
         const { isActive, clientName, description } = result
         if (isActive) {

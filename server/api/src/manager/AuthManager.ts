@@ -3,9 +3,9 @@ import * as bcrypt from 'bcryptjs'
 import * as _ from 'lodash'
 import { CommonError, ErrorHandle } from '../common/errorHandle'
 import dbService from '../service/dbService'
-import { UserAttributes } from '../types/users'
 import { Op } from 'sequelize'
 import { IClient } from '../types/client';
+import { IUsers } from '../model/Auth/User'
 export class AuthManager {
   decodePassword(password: string, hashPassword: string) {
     const result = bcrypt.compareSync(password, hashPassword)
@@ -28,8 +28,8 @@ export class AuthManager {
     }
     return userPayload
   }
-  async getTokenResult(usersData: UserAttributes, client: IClient) {
-    const tokenResult = await dbService.userToken.create({ userId: usersData.userId, clientId: client.clientId })
+  async getTokenResult(usersData: IUsers, client: IClient) {
+    const tokenResult = await dbService.dbModelAuth.userToken.create({ userId: usersData.userId, clientId: client.clientId })    
     const payloadAccesstoken = {
       ...this.selectPayloadAccesstoken(usersData),
       jti: tokenResult.tokenId,
@@ -56,19 +56,19 @@ export class AuthManager {
     try {
       const token = JWT.verifyToken(refreshToken) as any
       if (token.typ === 'refresh_token') {
-        const tokenResult = await dbService.userToken.findOne({
+        const tokenResult = await dbService.dbModelAuth.userToken.findOne({
           where: {
             refreshToken: token.jti,
             userId: token.sub,
             isActive: true
           },
           include: [
-            { model: dbService.users }
+            { model: dbService.dbModelAuth.users }
           ]
         })
         if (tokenResult) {
           this.revokeToken(token.jti)
-          return this.getTokenResult(tokenResult.User.toJSON(), token.client_id)
+          return this.getTokenResult(tokenResult.User, token.client_id)
         } else {
           const error = new CommonError()
           error.setErrorByCode('TOKEN_REVOKE')
@@ -88,7 +88,7 @@ export class AuthManager {
 
   }
   async revokeToken(tokenId: string) {
-    const tokenResult = await dbService.userToken.update({ isActive: false }, {
+    const tokenResult = await dbService.dbModelAuth.userToken.update({ isActive: false }, {
       where: { [Op.or]: [{ tokenId: tokenId }, { refreshToken: tokenId }] }
     })
     return tokenResult
