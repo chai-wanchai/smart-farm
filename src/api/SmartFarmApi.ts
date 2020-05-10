@@ -20,7 +20,7 @@ class SmartFarmApi {
       throw err.getError()
     }
   }
-  async saveAnimal(data: FormData): Promise<any> {
+  async saveAnimal(data: any): Promise<any> {
     try {
       const response = await axios.post(`/api/v1/animal/create`, { ...data })
       return response.data
@@ -30,7 +30,7 @@ class SmartFarmApi {
     }
 
   }
-  async updateAnimalInfo(data: FormData): Promise<any> {
+  async updateAnimalInfo(data: any): Promise<any> {
     try {
       const response = await axios.put(`/api/v1/animal/update`, { ...data })
       return response.data

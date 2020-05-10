@@ -18,7 +18,7 @@ export default class ListAnimal extends Component<IProps, any> {
     const data = await SmartFarmApi.getAllAnimal()
     let result = data.map((animal) => {
       animal.pictures = animal.pictures.map(item => {
-        return { data: `/api/v1/animal/pictures/${animal.barcode}/${item.ID}/${item.filename}`, ID: item.ID }
+        return { data: `/api/v1/animal/pictures/${animal.barcode}/${item.id}/${item.fileName}`, id: item.id }
       })
       return animal
     })

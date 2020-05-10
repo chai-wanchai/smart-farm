@@ -11,14 +11,16 @@ import Router from 'next/router';
 import Swal from 'sweetalert2'
 import * as Popup from '../../common/components/Popup/Popup';
 import { ErrorHandle } from '../../common/Errorhandle';
+import { IAnimalForm } from '../../models/SmartFarm';
+
 
 interface IProp {
-  value?: any,
+  value?: IAnimalForm,
   mode?: 'create' | 'edit'
 }
 interface IState {
   data: any,
-  value: any,
+  value: IAnimalForm,
   mode: 'create' | 'edit'
 }
 class AnimalForm extends Component<IProp, IState> {
@@ -31,17 +33,24 @@ class AnimalForm extends Component<IProp, IState> {
       sex: [{ sex: 'MALE', sexName: 'เพศผู้' }, { sex: 'FEMALE', sexName: 'เพศเมีย' }, { sex: 'NULL', sexName: 'ไม่ระบุ' }]
     },
     value: {
-      barcode: '',
-      animalTypeId: '',
-      animalTypeOther: null,
-      name: '',
-      description: '',
-      dob: '',
-      sex: '',
-      father: '',
-      mother: '',
+      barcode: "",
+      animalName: "",
+      sex: "",
+      DOB: "",
+      description: "",
+      isActive: true,
+      father: "",
+      mother: "",
+      buyDate: "",
+      animalTypeId: 0,
       pictures: [],
-      details: []
+      animalType: {
+        id: 0,
+        animalTypeName: "",
+        description: null,
+        animalSpeciesName: null
+      },
+      animalDetails: []
     }
   }
   constructor(props) {
@@ -60,10 +69,10 @@ class AnimalForm extends Component<IProp, IState> {
     const animalsType = await SmartFarmApi.getAnimalsType()
     const formDetails = await SmartFarmApi.getFormDetails()
     animalsType.push({ animalTypeId: 0, animalTypeName: 'อื่นๆ' })
-    formDetails.push({ detailsId: 0, detailTypeName: "อื่นๆ", description: "" })
+    formDetails.push({ detailId: 0, detailTypeName: "อื่นๆ", description: "" })
     StateData.animalType = animalsType
     StateData.formDetails = formDetails
-    this.setState({ data: StateData })
+    return StateData
   }
   handleChange(e, data) {
     let key = data.name;
@@ -72,15 +81,15 @@ class AnimalForm extends Component<IProp, IState> {
     if (key.includes('detail')) {
       const index = parseInt(key.split('-')[1])
       key = key.split('-')[0].split(':')[1]
-      let findKey = Object.assign({}, _.find(this.state.data.formDetails, { detailsId: data.ids || value }))
+      let findKey: any = Object.assign({}, _.find(this.state.data.formDetails, { detailId: data.ids || value }))
       if (!_.isEmpty(findKey)) {
-        if (key === 'detailsId') {
-          stateValue.details[index] = findKey
+        if (key === 'detailId') {
+          stateValue.animalDetails[index] = findKey
         } else {
-          stateValue.details[index][key] = value
+          stateValue.animalDetails[index][key] = value
         }
       } else {
-        stateValue.details[index][key] = value
+        stateValue.animalDetails[index][key] = value
       }
     } else {
       stateValue[key] = value
@@ -92,10 +101,15 @@ class AnimalForm extends Component<IProp, IState> {
     Popup.Loading()
     try {
       let value = this.state.value
-      if (moment(value.dob).isValid()) {
-        value.dob = moment(value.dob).format()
+      if (moment(value.DOB).isValid()) {
+        value.DOB = moment(value.DOB).format()
       } else {
-        value.dob = moment().format()
+        value.DOB = moment().format()
+      }
+      if (moment(value.buyDate).isValid()) {
+        value.buyDate = moment(value.buyDate).format()
+      } else {
+        value.buyDate = moment().format()
       }
       let result = null
       if (this.props.mode === 'create') {
@@ -103,7 +117,7 @@ class AnimalForm extends Component<IProp, IState> {
         Router.push('/home')
       } else {
         value.pictures = _.reduce(value.pictures, (dataResult: any, item) => {
-          if (item.filename) {
+          if (item.fileName) {
             dataResult.push(item)
           }
           return dataResult
@@ -124,7 +138,7 @@ class AnimalForm extends Component<IProp, IState> {
       const fileName = file.name
       let value = this.state.value;
       Resizer.imageFileResizer(file, 500, 500, 'JPEG', 100, 0, uri => {
-        const imgMeta = { filename: fileName, data: uri }
+        const imgMeta = { fileName: fileName, data: uri, pictureType: 'animal' }
         value.pictures.push(imgMeta)
         this.setState({ value: value });
       }, 'base64')
@@ -144,11 +158,11 @@ class AnimalForm extends Component<IProp, IState> {
     console.log(data);
     const delFile = data.data
     let value = this.state.value
-    if (delFile.ID) {
-      SmartFarmApi.deleteAnimalPicture(delFile.ID)
+    if (delFile.id) {
+      SmartFarmApi.deleteAnimalPicture(delFile.id)
     }
     value.pictures = _.reduce(value.pictures, (result: any, valueItem) => {
-      if (valueItem.filename !== delFile.filename || valueItem.ID !== delFile.ID) {
+      if (valueItem.fileName !== delFile.fileName || valueItem.id !== delFile.id) {
         result.push(valueItem)
       }
       return result
@@ -156,34 +170,42 @@ class AnimalForm extends Component<IProp, IState> {
     this.setState({ value: value })
   }
   onReset() {
-    let stateInint: any = {}
+    let stateInint: IState = { ...this.state }
     if (this.props.mode === 'create') {
       stateInint = { ...this.initState }
-      stateInint.pictures = []
+      stateInint.value.pictures = []
+      stateInint.value.animalDetails = []
     } else {
-      stateInint = { value: this.props.value, mode: this.props.mode }
+      stateInint.value = this.props.value as IAnimalForm
+      stateInint.mode = this.props.mode as any
     }
-    stateInint.data = this.state.data
+    // stateInint.data = this.state.data
     this.setState({ ...stateInint })
   }
   onClickAddMoreDetails(e, Eventdata) {
     let valueState = this.state.value
-    valueState.details.push({ detailsId: 0, detailTypeName: "อื่นๆ", description: "", value: "" })
+    valueState.animalDetails.push({ detailId: 0, detailTypeName: "อื่นๆ", description: "", value: "" })
     this.setState({ value: valueState })
   }
-  componentDidMount() {
+  async componentDidMount() {
+    let dataMaster = await this.fetchStaticData()
     if (this.props.value) {
       let value = this.props.value
-      this.setState({ value: value, mode: 'edit' })
+      value.animalDetails = value.animalDetails.map(item => {
+        const detailTypename: any = _.find(dataMaster.formDetails, { detailId: item.detailTypeId })
+        item.detailTypeName = detailTypename ? detailTypename.detailTypeName : ''
+        return item
+      })
+      this.setState({ value: value, mode: 'edit', data: dataMaster })
     }
-    this.fetchStaticData()
+
   }
   render() {
     const { value, data, mode } = this.state
     console.log(this.state);
     let animalType = data.animalType.map(item => { return { text: item.animalTypeName, value: item.animalTypeId } })
     let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
-    let formDetails = data.formDetails.map(item => { return { text: item.detailTypeName, value: item.detailsId } })
+    let formDetails = data.formDetails.map(item => { return { text: item.detailTypeName, value: item.detailId } })
     return (
       <div style={{ padding: '1rem' }}>
         <Form onSubmit={this.handleSubmit}>
@@ -202,8 +224,8 @@ class AnimalForm extends Component<IProp, IState> {
               placeholder="ชื่อสัตว์"
               label="ชื่อสัตว์"
               width="16"
-              value={value.name}
-              name='name'
+              value={value.animalName}
+              name='animalName'
               onChange={this.handleChange}>
             </Form.Input>
           </Form.Group>
@@ -248,10 +270,10 @@ class AnimalForm extends Component<IProp, IState> {
           </Form.Group>
           <Form.Group>
             <DateInput
-              name="dob"
+              name="DOB"
               placeholder="วันที่เกิด"
               label="วันที่เกิด"
-              value={value.dob}
+              value={value.DOB}
               dateFormat="DD-MM-YYYY"
               iconPosition="left"
               onChange={this.handleChange}
@@ -281,24 +303,24 @@ class AnimalForm extends Component<IProp, IState> {
               onClick={this.onClickAddMoreDetails}
             />
           </Form.Field>
-          {value.details.map((item, index) => {
-            return <>
+          {value.animalDetails.map((item, index) => {
+            return <div key={index}>
               <Form.Group key={index}>
                 <Form.Select
                   placeholder="ประเภทข้อมูล"
                   label="ประเภทข้อมูล"
                   options={formDetails}
-                  value={item.detailsId}
-                  key={`detail:detailsId-${index}`}
-                  name={`detail:detailsId-${index}`}
+                  value={item.detailTypeId}
+                  key={`detail:detailId-${index}`}
+                  name={`detail:detailId-${index}`}
                   onChange={(this.handleChange)}>
                 </Form.Select>
-                {item.detailsId === 0 ?
+                {item.detailId === 0 ?
                   <Form.Input
                     placeholder="ระบุประเภทข้อมูล"
                     label="ระบุประเภทข้อมูล"
                     value={value.animalTypeOther}
-                    ids={item.detailsId}
+                    ids={item.detailId}
                     key={`detail:detailTypeName-${index}`}
                     name={`detail:detailTypeName-${index}`}
                     onChange={this.handleChange}>
@@ -307,14 +329,14 @@ class AnimalForm extends Component<IProp, IState> {
                   placeholder={item.detailTypeName}
                   label={item.detailTypeName}
                   value={item.value}
-                  ids={item.detailsId}
+                  ids={item.detailId}
                   key={`detail:value-${index}`}
                   name={`detail:value-${index}`}
                   onChange={this.handleChange}>
                 </Form.TextArea>
               </Form.Group>
               <Divider />
-            </>
+            </div>
           })}
           <Form.TextArea
             placeholder="รายละเอียด"
@@ -346,8 +368,8 @@ class AnimalForm extends Component<IProp, IState> {
             {value.pictures.map(item => {
               const showDeletePic = mode === 'edit' ?
                 { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
-              return <div className={styles['pic-div']} key={item.ID}>
-                <Image src={item.data} alt={item.ID} rounded label={showDeletePic} />
+              return <div className={styles['pic-div']} key={item.id}>
+                <Image src={item.data} alt={item.id} rounded label={showDeletePic} />
               </div>
             })}
           </Image.Group>

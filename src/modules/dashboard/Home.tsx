@@ -19,12 +19,12 @@ class Home extends Component<any, any> {
     this.setState({ ...data })
   }
   render() {
-    const { totalAnimalType, totalAnimal,eachAnimalType } = this.state;
-   
+    const { totalAnimalType, totalAnimal, eachAnimalType } = this.state;
+
     const dataTable = eachAnimalType.map(animalType => {
       let value = {
-        AnimalType: animalType.AnimalType.AnimalTypeName,
-        Total: animalType.CountAnimalType
+        AnimalType: animalType.animalType.animalTypeName,
+        Total: animalType.countAnimalType
       }
       return value;
     })
@@ -46,7 +46,7 @@ class Home extends Component<any, any> {
           </Card>
         </Card.Group>
         <BaseTable data={dataTable} title={"ประเภทสัตว์แต่ละประเภท"} columns={columns} />
-        <TableGroupAnimal/>
+        <TableGroupAnimal />
       </div>
     );
   }

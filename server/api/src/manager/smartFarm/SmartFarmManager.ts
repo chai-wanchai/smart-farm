@@ -25,11 +25,11 @@ export class SmartFarmManager {
   async getFormDetails() {
     try {
       const rename: FindAttributeOptions = [
-        ['ID', 'detailsId'],
-        ['DetailType', 'detailTypeName'],
-        ['DetailDescription', 'description']
+        ['id', 'detailId'],
+        ['detailType', 'detailTypeName'],
+        ['detailDescription', 'description']
       ]
-      const result = await dbService.dbModelSmartFarm.animalDetails.findAll({ attributes: rename })
+      const result = await dbService.dbModelSmartFarm.animalDetailsTypes.findAll({ attributes: rename })
       return result
     } catch (error) {
       const err = new ErrorHandle(error)
@@ -43,8 +43,8 @@ export class SmartFarmManager {
         const insertPic = {
           barcode: data.barcode,
           picture: buff,
-          fileName: item.filename,
-          pictureType: pictureType
+          fileName: item.fileName,
+          pictureType: item.pictureType || pictureType
         }
         await dbService.dbModelSmartFarm.animalPicture.create(insertPic)
       })
@@ -52,16 +52,16 @@ export class SmartFarmManager {
   }
   async addFormDetails(data: any) {
     let insert = []
-    if (data.details.length > 0) {
-      insert = data.details.map(async (item) => {
-        if (item.detailId === 0) {
-          const details = await dbService.dbModelSmartFarm.animalDetailsTypes.findOrCreate(
-            {
-              where: { detailType: item.detailTypeName },
-              defaults: { detailType: item.detailTypeName, detailDescription: item.description }
-            })
-          item.detailId = details[0].id
-        }
+    if (data.animalDetails.length > 0) {
+      insert = data.animalDetails.map(async (item) => {
+
+        const details = await dbService.dbModelSmartFarm.animalDetailsTypes.findOrCreate(
+          {
+            where: { detailType: item.detailTypeName },
+            defaults: { detailType: item.detailTypeName, detailDescription: item.description }
+          })
+        item.detailId = details[0].id
+
         return item
       })
       insert = await Promise.all(insert)
@@ -74,7 +74,8 @@ export class SmartFarmManager {
     if (inserted.length > 0) {
       inserted = inserted.map(async (item) => {
         const dataUpsert = { barcode: data.barcode, detailTypeId: item.detailId, text: item.value }
-        await dbService.dbModelSmartFarm.animalDetails.upsert(dataUpsert)
+        const upsert = await dbService.dbModelSmartFarm.animalDetails.upsert(dataUpsert)
+        return upsert
       })
     }
     return result
@@ -94,7 +95,7 @@ export class SmartFarmManager {
         include: [
           { model: dbService.dbModelSmartFarm.animalPicture, as: 'pictures', attributes: ['id', 'pictureType', 'fileName', 'barcode'] },
           { model: dbService.dbModelSmartFarm.animalTypes, as: 'animalType' },
-          { model: dbService.dbModelSmartFarm.animalDetails, as: 'animalDetails' }
+          { model: dbService.dbModelSmartFarm.animalDetails, as: 'animalDetails', attributes: ['id', ['text', 'value'], 'detailTypeId'] }
         ]
       }
       let result: any = []
@@ -130,8 +131,8 @@ export class SmartFarmManager {
       const animalType = await this.findAnimalTypeID(data)
       const insertData = {
         barcode: data.barcode,
-        animalName: data.name,
-        DOB: data.dob,
+        animalName: data.animalName,
+        DOB: data.DOB,
         sex: data.sex,
         animalTypeId: animalType.id,
         description: data.description,
@@ -140,7 +141,7 @@ export class SmartFarmManager {
         buyDate: data.buyDate
       }
       const result = await dbService.dbModelSmartFarm.animal.create(insertData)
-      this.addAnimalPicture(data, 'animal')
+      this.addAnimalPicture(data)
       this.addAnimalDetails(data)
       return result
     } catch (error) {
@@ -153,9 +154,9 @@ export class SmartFarmManager {
       const animalType = await this.findAnimalTypeID(data)
       const insertData = {
         barcode: data.barcode,
-        animalName: data.name,
+        animalName: data.animalName,
         animalTypeId: animalType.id,
-        DOB: data.dob,
+        DOB: data.DOB,
         sex: data.sex,
         description: data.description
       }
@@ -164,7 +165,7 @@ export class SmartFarmManager {
         returning: true
       }
       const result = await dbService.dbModelSmartFarm.animal.update(insertData, option)
-      this.addAnimalPicture(data, 'animal')
+      this.addAnimalPicture(data)
       this.addAnimalDetails(data)
       return result[1]
     } catch (error) {

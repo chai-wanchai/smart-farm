@@ -18,7 +18,7 @@ class TableGroupAnimal extends Component<any, any> {
     const data = await SmartFarmApi.getAllAnimal()
     let result = data.map((animal) => {
       animal.pictures = animal.pictures.map(item => {
-        return { data: `/api/v1/animal/pictures/${animal.barcode}/${item.ID}/${item.filename}`, ID: item.ID }
+        return { data: `/api/v1/animal/pictures/${animal.barcode}/${item.id}/${item.fileName}`, ID: item.id }
       })
       return animal
     })
@@ -35,15 +35,14 @@ class TableGroupAnimal extends Component<any, any> {
               <Image src='https://react.semantic-ui.com/images/wireframe/image.png' rounded size='mini' />}
               <Header.Content>
                 {item.barcode}
-                <Header.Subheader>{item.name}</Header.Subheader>
+                <Header.Subheader>{item.animalName}</Header.Subheader>
               </Header.Content>
             </Header>
           </Table.Cell>
-          <Table.Cell>{item.AnimalType.AnimalTypeName}</Table.Cell>
+          <Table.Cell>{item.animalType.animalTypeName}</Table.Cell>
         </Table.Row>
         return comp
     })
-    console.log(this.state)
     return (
       <>
         <Table basic='very' celled collapsing unstackable>
@@ -56,18 +55,6 @@ class TableGroupAnimal extends Component<any, any> {
           </Table.Header>
           <Table.Body>
             {row}
-            {/* <Table.Row>
-              <Table.Cell>
-                <Header as='h4' image>
-                  <Image src='https://react.semantic-ui.com/images/avatar/small/lena.png' rounded size='mini' />
-                  <Header.Content>
-                    Lena
-              <Header.Subheader>Human Resources</Header.Subheader>
-                  </Header.Content>
-                </Header>
-              </Table.Cell>
-              <Table.Cell>22</Table.Cell>
-            </Table.Row> */}
           </Table.Body>
         </Table>
       </>

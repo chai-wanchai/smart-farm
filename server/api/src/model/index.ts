@@ -46,10 +46,11 @@ export const createSmartFarmModel = (sequelize: Sequelize) => {
   animal.hasMany(animalPicture, { sourceKey: 'barcode', foreignKey: 'barcode', as: 'pictures' })
   animal.hasMany(animalHistory, { sourceKey: 'barcode', foreignKey: 'barcode', as: 'history' })
   animal.belongsTo(animalTypes, { foreignKey: 'animalTypeId', as: 'animalType' })
+  animalDetailsTypes.belongsToMany(animal, { through: { model: animalDetails, unique: true }, foreignKey: 'detailTypeId' })
+  animal.belongsToMany(animalDetailsTypes, { through: { model: animalDetails, unique: true }, foreignKey: 'barcode' })
   animal.hasMany(animalDetails, { sourceKey: 'barcode', foreignKey: 'barcode', as: 'animalDetails' })
-  animalDetails.belongsTo(animal, { foreignKey: 'barcode'})
-  animalDetails.belongsTo(animalDetailsTypes, { foreignKey: 'detailTypeId'})
-  
+  // animalDetails.belongsTo(animalDetailsTypes, { foreignKey: 'detailTypeId'})
+
   // ---------- export model ---------------------// 
   const models = {
     animal,
@@ -58,7 +59,7 @@ export const createSmartFarmModel = (sequelize: Sequelize) => {
     animalDetailsTypes,
     animalTypes,
     animalDetails
-  }  
+  }
   return models;
 };
 
