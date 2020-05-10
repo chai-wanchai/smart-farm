@@ -39,7 +39,7 @@ class FeedHistory extends Component<IProps, IState> {
                   <Feed.Date>วันที่ {moment(item.date).format('DD MMM YYYY')} ({moment(item.date).fromNow()})</Feed.Date>
                 </Feed.Summary>
                 <Feed.Summary>
-                  <p style={{ fontWeight: 'normal' }}>{item.description}</p>
+                  <p style={{ fontWeight: 'normal', whiteSpace: 'break-spaces' }}>{item.description}</p>
                 </Feed.Summary>
                 <Feed.Extra images>
                   {item.pictures.map((pic, index) => {
