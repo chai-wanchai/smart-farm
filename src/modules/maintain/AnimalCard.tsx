@@ -53,7 +53,7 @@ export default class AnimalCard extends Component<IProp, IState> {
     }
   }
   async onDeletePicture(event, data) {
-    const fileID = data.data.ID
+    const fileID = data.data.id
     const result = await SmartFarmApi.deleteAnimalPicture(fileID)
     if (result.isSuccess) {
       const data = await SmartFarmApi.getAnimalByBarcode(this.state.value.barcode)

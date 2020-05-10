@@ -5,6 +5,8 @@ import AddPicture from '../../../common/components/AddPicture/AddPicture'
 import { IAnimalPicture } from '../../../models/SmartFarm'
 import SmartFarmApi from '../../../api/SmartFarmApi'
 import moment from 'moment'
+import withPopupDialog from '../../../common/components/Popup/hocPopup'
+import Router from 'next/router'
 interface IState {
   value: {
     pictures: IAnimalPicture[],
@@ -57,11 +59,13 @@ export default class HistoryForm extends Component<IProps, IState> {
     console.log(stateValue.date)
     if (moment(stateValue.date).isValid()) {
       stateValue.date = moment(stateValue.date).format()
-    }else{
+    } else {
       stateValue.date = moment().format()
     }
     const result = await SmartFarmApi.createAnimalHistory(stateValue)
-    console.log(result)
+    if (result) {
+      Router.reload()
+    }
   }
   render() {
     const { value } = this.state
@@ -94,3 +98,4 @@ export default class HistoryForm extends Component<IProps, IState> {
     )
   }
 }
+export const PopupHistoryForm = withPopupDialog(HistoryForm)

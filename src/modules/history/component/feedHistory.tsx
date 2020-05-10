@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import { Feed, Image } from 'semantic-ui-react';
 import { IAnimalHistory } from '../../../models/AnimalHistory';
 import moment from 'moment';
+import 'moment/locale/th';
 import SmartFarmApi from '../../../api/SmartFarmApi';
+
+moment.locale('th')
 interface IProps {
   barcode: string;
 }
@@ -13,9 +16,7 @@ class FeedHistory extends Component<IProps, IState> {
   constructor(props) {
     super(props);
     this.state = {
-      data: [
-        { title: 'rrr', createdAt: '2018-01-30', pictures: [], description: 'sddd', date: '2018-01-30' }
-      ]
+      data: []
     }
   }
   async componentDidMount() {
@@ -34,17 +35,17 @@ class FeedHistory extends Component<IProps, IState> {
               </Feed.Label>
               <Feed.Content>
                 <Feed.Summary>
-                  <Feed.User>{item.title}</Feed.User> วันที่ {item.date}
-                  <Feed.Date>{moment(item.date).fromNow()}</Feed.Date>
+                  <Feed.User>{item.title}</Feed.User>
+                  <Feed.Date>วันที่ {moment(item.date).format('DD MMM YYYY')} ({moment(item.date).fromNow()})</Feed.Date>
                 </Feed.Summary>
                 <Feed.Summary>
-                  {item.description}
+                  <p style={{ fontWeight: 'normal' }}>{item.description}</p>
                 </Feed.Summary>
                 <Feed.Extra images>
                   {item.pictures.map((pic, index) => {
-                    return <>
-                      <Image src={pic.url} size='small' key={`${index}-${pic.id}`} />
-                    </>
+                    return <div key={`${index}-${pic.id}`} >
+                      <Image src={pic.url} size='small' />
+                    </div>
                   })}
                 </Feed.Extra>
               </Feed.Content>

@@ -3,7 +3,7 @@ import { Container, Button } from 'semantic-ui-react'
 import { IAnimalForm } from '../../models/SmartFarm'
 import SmartFarmApi from '../../api/SmartFarmApi'
 import BaseTable from '../../common/components/Table/baseTable'
-import HistoryForm from './component/historyForm'
+import HistoryForm, { PopupHistoryForm } from './component/historyForm'
 import AnimalHistoryTable from './component/historyTable'
 import FeedHistory from './component/feedHistory'
 interface IState {
@@ -12,7 +12,7 @@ interface IState {
 interface IProps {
   mode: 'view' | 'edit' | 'table'
 }
-export default class AnimalHistory extends Component<any, any> {
+export default class AnimalHistory extends Component<IProps, any> {
   constructor(props) {
     super(props)
     this.state = {
@@ -24,10 +24,7 @@ export default class AnimalHistory extends Component<any, any> {
   render() {
     return (
       <Container>
-        {this.props.mode === 'table' ? <AnimalHistoryTable /> : null}
-         <FeedHistory barcode="11111"/>
-        <HistoryForm barcode="11111" animalName="bbb"/>
-       
+        <AnimalHistoryTable />
       </Container>
     )
   }

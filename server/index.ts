@@ -21,6 +21,13 @@ appNext.prepare().then(() => {
       asPath: `/maintain/animal/${req.params.mode}`
     }));
   })
+  server.get('/animal/info/:barcode', (req, res) => {
+    renderPage(req, res, '/animal-info', Object.assign(req.params, {
+      barcode: req.params.barcode,
+      asPath: `/animal/info/${req.params.barcode}`,
+      ...req.params
+    }));
+  })
   server.all('*', (req, res) => handle(req, res))
 
   server.listen(port, err => {
