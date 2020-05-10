@@ -197,15 +197,17 @@ class AnimalForm extends Component<IProp, IState> {
         return item
       })
       this.setState({ value: value, mode: 'edit', data: dataMaster })
+    } else {
+      this.setState({ data: dataMaster })
     }
 
   }
   render() {
     const { value, data, mode } = this.state
-    console.log(this.state);
     let animalType = data.animalType.map(item => { return { text: item.animalTypeName, value: item.animalTypeId } })
     let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
     let formDetails = data.formDetails.map(item => { return { text: item.detailTypeName, value: item.detailId } })
+   
     return (
       <div style={{ padding: '1rem' }}>
         <Form onSubmit={this.handleSubmit}>
