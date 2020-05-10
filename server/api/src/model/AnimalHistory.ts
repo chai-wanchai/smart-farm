@@ -14,11 +14,14 @@ export const Attributes: ModelAttributes = {
     autoIncrement: true,
     primaryKey: true
   },
+  title: {
+    type: DataTypes.TEXT
+  },
   description: {
     type: DataTypes.TEXT,
     allowNull: false
   },
-  date:{
+  date: {
     type: DataTypes.DATE,
     defaultValue: new Date()
   },
@@ -29,6 +32,9 @@ export const Attributes: ModelAttributes = {
       key: 'barcode'
     },
     onDelete: 'CASCADE'
+  },
+  picList:{
+    type: DataTypes.ARRAY(DataTypes.DECIMAL)
   }
 }
 export class AnimalHistory extends Model<IAnimalHistory> {

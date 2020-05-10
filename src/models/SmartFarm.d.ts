@@ -3,7 +3,8 @@ export interface IAnimalPicture {
   fileName: string;
   id?: number
   pictureType?: string;
-  data?:any
+  data?: any
+  url?: string
 }
 export interface IFormDetails {
   detailId: number,

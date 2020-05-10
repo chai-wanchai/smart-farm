@@ -14,6 +14,8 @@ router.get('/animal/pictures/:barcode/:id/:filename', Controller.getAnimalsPictu
 router.delete('/animal/pictures/:id', Controller.deleteAnimalsPicture)
 
 router.post('/animal/history/create', Controller.recordHistoryAnimal)
+router.get('/animal/history/all', Controller.getAllHistoryAnimal)
+router.get('/animal/history/:barcode', Controller.getHistoryAnimalByBarcode)
 router.get('/farm/summary', Controller.getSummaryFarm)
 
 export default router;

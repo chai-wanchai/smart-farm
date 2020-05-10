@@ -49,6 +49,7 @@ export const createSmartFarmModel = (sequelize: Sequelize) => {
   animalDetailsTypes.belongsToMany(animal, { through: { model: animalDetails, unique: true }, foreignKey: 'detailTypeId' })
   animal.belongsToMany(animalDetailsTypes, { through: { model: animalDetails, unique: true }, foreignKey: 'barcode' })
   animal.hasMany(animalDetails, { sourceKey: 'barcode', foreignKey: 'barcode', as: 'animalDetails' })
+  animalHistory.hasMany(animalPicture, { sourceKey: 'barcode', foreignKey: 'barcode', as: 'pictures' })
   // animalDetails.belongsTo(animalDetailsTypes, { foreignKey: 'detailTypeId'})
 
   // ---------- export model ---------------------// 

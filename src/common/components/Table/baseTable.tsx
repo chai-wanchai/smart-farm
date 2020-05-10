@@ -31,11 +31,11 @@ export default class BaseTable extends Component<IProps, any> {
     renderData = this.props.data.map((item, key) => {
       const eachCol = renderColumn.map((col, index) => {
         let val: any = null
-        if (typeof item[col.colKey] === "object") {
-          val = JSON.stringify(item[col.colKey])
-        } else {
+        // if (typeof item[col.colKey] === "object") {
+        //   val = JSON.stringify(item[col.colKey])
+        // } else {
           val = item[col.colKey]
-        }
+       // }
         return <Table.Cell collapsing key={`${col.colKey}-${index}`}>{val}</Table.Cell>
       })
       return <Table.Row key={key}>{eachCol}</Table.Row>

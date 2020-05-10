@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction } from 'express'
 import manager from '../manager'
+import {manager as smartFarmManager} from '../manager/smartFarm'
 import { ErrorHandle } from '../common/errorHandle'
 import * as _ from 'lodash'
 export async function getAnimals(req: Request, res: Response, next: NextFunction) {
@@ -69,7 +70,26 @@ export async function updateAnimal(req: Request, res: Response, next: NextFuncti
 }
 export async function recordHistoryAnimal(req: Request, res: Response, next: NextFunction) {
 	try {
-		const result: any = await manager.smartfarm.createAnimalHistory(req.body)
+		const result: any = await smartFarmManager.HistoryManager.createHistory(req.body)
+		res.json(result)
+	} catch (error) {
+		const err = new ErrorHandle(error)
+		err.sendErrorResponse(res)
+	}
+}
+export async function getHistoryAnimalByBarcode(req: Request, res: Response, next: NextFunction) {
+	try {
+		const barcode = req.params.barcode
+		const result: any = await smartFarmManager.HistoryManager.getHistory(barcode)
+		res.json(result)
+	} catch (error) {
+		const err = new ErrorHandle(error)
+		err.sendErrorResponse(res)
+	}
+}
+export async function getAllHistoryAnimal(req: Request, res: Response, next: NextFunction) {
+	try {
+		const result: any = await smartFarmManager.HistoryManager.getHistory()
 		res.json(result)
 	} catch (error) {
 		const err = new ErrorHandle(error)

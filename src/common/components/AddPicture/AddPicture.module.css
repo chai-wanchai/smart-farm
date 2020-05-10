@@ -1,0 +1,22 @@
+.pic-delete-btn {
+  background-color: transparent !important;
+  position: absolute;
+  color:#db2828 !important;
+  z-index: 1;
+  margin: 5px -10px !important;
+  border-radius: 10px !important;
+}
+
+.pic-div {
+  width: fit-content;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.center-div {
+  justify-content: center;
+}
+
+.text-center {
+  text-align: center;
+}

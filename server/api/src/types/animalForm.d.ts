@@ -24,3 +24,16 @@ export interface IAnimalForm {
   animalType: IAnimalType,
   animalDetails: Array<IAnimalDetails>
 }
+
+export interface IAnimalPictureClient {
+  data: string
+  fileName: string
+  pictureType: string
+}
+export interface IAnimalHistoryClient {
+  barcode: string
+  date: string
+  description: string
+  pictures: Array<IAnimalPictureClient>
+  title: string
+}

@@ -93,7 +93,11 @@ export class SmartFarmManager {
     try {
       const option: FindOptions = {
         include: [
-          { model: dbService.dbModelSmartFarm.animalPicture, as: 'pictures', attributes: ['id', 'pictureType', 'fileName', 'barcode'] },
+          {
+            model: dbService.dbModelSmartFarm.animalPicture, as: 'pictures',
+            attributes: ['id', 'pictureType', 'fileName', 'barcode',
+            [sequelize.fn('CONCAT', '/api/v1/animal/pictures/', sequelize.col('pictures.barcode'),'/',sequelize.col('pictures.id'),'/',sequelize.col('pictures.fileName')), 'url']]
+          },
           { model: dbService.dbModelSmartFarm.animalTypes, as: 'animalType' },
           { model: dbService.dbModelSmartFarm.animalDetails, as: 'animalDetails', attributes: ['id', ['text', 'value'], 'detailTypeId'] }
         ]
@@ -168,15 +172,6 @@ export class SmartFarmManager {
       this.addAnimalPicture(data)
       this.addAnimalDetails(data)
       return result[1]
-    } catch (error) {
-      const err = new ErrorHandle(error)
-      throw err
-    }
-  }
-  async createAnimalHistory(data) {
-    try {
-      const result = await dbService.dbModelSmartFarm.animalHistory.create(data)
-      return result
     } catch (error) {
       const err = new ErrorHandle(error)
       throw err

@@ -1,6 +1,8 @@
 import axios from './axios'
 import { ErrorHandle } from '../common/Errorhandle'
 import { IFormDetails } from '../models/SmartFarm'
+import { IAnimalHistory } from '../models/AnimalHistory'
+import { AxiosResponse } from 'axios'
 class SmartFarmApi {
   async getAnimalsType() {
     try {
@@ -11,7 +13,7 @@ class SmartFarmApi {
       throw err.getError()
     }
   }
-  async getFormDetails():Promise<IFormDetails[]> {
+  async getFormDetails(): Promise<IFormDetails[]> {
     try {
       const response = await axios.get(`/api/v1/animal/form/details`)
       return response.data
@@ -85,7 +87,24 @@ class SmartFarmApi {
       const err = new ErrorHandle(error)
       throw err.getError()
     }
-
+  }
+  async getAnimalHistoryByBarcode(barcode: string): Promise<IAnimalHistory[]> {
+    try {
+      const response = await axios.get(`/api/v1/animal/history/${barcode}`)
+      return response.data
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err.getError()
+    }
+  }
+  async createAnimalHistory(data: IAnimalHistory): Promise<any> {
+    try {
+      const response = await axios.post(`/api/v1/animal/history/create`,data)
+      return response.data
+    } catch (error) {
+      const err = new ErrorHandle(error)
+      throw err.getError()
+    }
   }
 }
 export default new SmartFarmApi()
