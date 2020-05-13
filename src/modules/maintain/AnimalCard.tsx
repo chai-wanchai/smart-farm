@@ -76,6 +76,7 @@ export default class AnimalCard extends Component<IProp, IState> {
   render() {
     const { mode } = this.props
     const { isOpenPopup, value } = this.state
+    const sexName = { MALE: "เพศผู้", FEMALE: "เพศเมีย" }
     return (
       <Item>
         <Item.Content>
@@ -99,7 +100,7 @@ export default class AnimalCard extends Component<IProp, IState> {
           </Item.Description>
           <Item.Extra>
             <Label color='red' horizontal> อายุ {moment(value.DOB).fromNow()}</Label>
-            <Label color='purple' horizontal>   เพศ {value.sex} </Label>
+            <Label color='purple' horizontal>{sexName[value.sex]}</Label>
           </Item.Extra>
           {mode === 'edit' ?
             <Item.Extra>
