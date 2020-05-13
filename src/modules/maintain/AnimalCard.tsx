@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Card, Image, Button, Modal, Container, Label } from 'semantic-ui-react'
+import { Card, Image, Button, Modal, Container, Label, Item } from 'semantic-ui-react'
 import styles from './AnimalForm.module.css'
 import * as _ from 'lodash';
 import SmartFarmApi from '../../api/SmartFarmApi';
@@ -77,17 +77,46 @@ export default class AnimalCard extends Component<IProp, IState> {
     const { mode } = this.props
     const { isOpenPopup, value } = this.state
     return (
-      <Card fluid>
-        <Image.Group size="medium" className={styles['text-center']}>
-          {value.pictures.map(item => {
-            const showDeletePic = mode === 'edit' ?
-              { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
-            return <div className={styles['pic-div']} key={item.id}>
-              <Image src={item.data} alt={item.id} rounded label={showDeletePic} />
-            </div>
-          })}
-        </Image.Group>
-        <Card.Content>
+      <Item>
+        <Item.Content>
+          <Image.Group size="medium" className={styles['text-center']}>
+            {value.pictures.map(item => {
+              const showDeletePic = mode === 'edit' ?
+                { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
+              return <div className={styles['pic-div']} key={item.id}>
+                <Image src={item.data} alt={item.id} rounded label={showDeletePic} />
+              </div>
+            })}
+          </Image.Group>
+        </Item.Content>
+        <Item.Content>
+          <Item.Header as='a' href={`/animal/info/${value.barcode}`}>{value.animalName}</Item.Header>
+          <Item.Meta>
+            <span className='cinema'>{value.barcode}</span>
+          </Item.Meta>
+          <Item.Description>
+            {value.description}
+          </Item.Description>
+          <Item.Extra>
+            <Label color='red' horizontal> อายุ {moment(value.DOB).fromNow()}</Label>
+            <Label color='purple' horizontal>   เพศ {value.sex} </Label>
+          </Item.Extra>
+          {mode === 'edit' ?
+            <Item.Extra>
+              <Button color="yellow" onClick={this.handlePopup}>แก้ไข</Button>
+              <Button color="red" onClick={this.onDeleteAnimal}>ลบ</Button>
+            </Item.Extra> : null
+          }
+          <Modal open={isOpenPopup} onClose={this.handlePopup} closeIcon>
+            <Modal.Header>แก้ไขข้อมูลสัตว์</Modal.Header>
+            <Modal.Description>
+              <Container>
+                <AnimalForm mode="edit" value={value} />
+              </Container>
+            </Modal.Description>
+          </Modal>
+        </Item.Content>
+        {/* <Card.Content>
           <Card.Header>
             <Label as='a' color='blue' tag>
               Barcode
@@ -124,8 +153,8 @@ export default class AnimalCard extends Component<IProp, IState> {
               </Container>
             </Modal.Description>
           </Modal>
-        </Card.Content>
-      </Card>
+        </Card.Content> */}
+      </Item>
     )
   }
 }

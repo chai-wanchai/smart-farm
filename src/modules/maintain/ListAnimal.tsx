@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import AnimalCard from './AnimalCard';
 import SmartFarmApi from '../../api/SmartFarmApi';
-import { Segment, Dimmer, Loader } from 'semantic-ui-react';
+import { Segment, Dimmer, Loader, Item } from 'semantic-ui-react';
 interface IProps {
   mode: 'view' | 'edit'
 }
@@ -36,10 +36,11 @@ export default class ListAnimal extends Component<IProps, any> {
         <Dimmer active={isLoading} inverted>
           <Loader size='massive' active={isLoading}>กำลังโหลดข้อมูล....</Loader>
         </Dimmer>
-        {data.map(item => {
-          return <AnimalCard data={item} mode={mode || 'view'} key={item.barcode}/>
-        })}
-
+        <Item.Group divided>
+          {data.map(item => {
+            return <AnimalCard data={item} mode={mode || 'view'} key={item.barcode} />
+          })}
+        </Item.Group>
       </div>
     )
   }
