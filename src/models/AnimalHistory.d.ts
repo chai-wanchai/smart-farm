@@ -6,4 +6,5 @@ export interface IAnimalHistory {
   pictures: Array<IAnimalPicture>
   createdAt?: Date | string;
   updatedAt?: Date;
+  [key: string]: any
 }

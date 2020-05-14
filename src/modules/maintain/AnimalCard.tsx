@@ -117,44 +117,6 @@ export default class AnimalCard extends Component<IProp, IState> {
             </Modal.Description>
           </Modal>
         </Item.Content>
-        {/* <Card.Content>
-          <Card.Header>
-            <Label as='a' color='blue' tag>
-              Barcode
-              <Label.Detail>{value.barcode}</Label.Detail>
-            </Label>
-            <Label as='a' color='teal' image>
-              <img src='https://react.semantic-ui.com/images/avatar/small/jenny.jpg' />
-              ชื่อ
-              <Label.Detail>{value.animalName}</Label.Detail>
-            </Label>
-            <Label color="yellow" >
-              อายุ {moment(value.DOB).fromNow()}
-            </Label>
-            <Label>
-              เพศ {value.sex}
-            </Label>
-          </Card.Header>
-
-          <Card.Description>
-
-            <p>รายละเอียด : {value.description}</p>
-          </Card.Description>
-          {mode === 'edit' ?
-            <Card.Content textAlign='center'>
-              <Button color="yellow" onClick={this.handlePopup}>แก้ไข</Button>
-              <Button color="red" onClick={this.onDeleteAnimal}>ลบ</Button>
-            </Card.Content> : null
-          }
-          <Modal open={isOpenPopup} onClose={this.handlePopup} closeIcon>
-            <Modal.Header>แก้ไขข้อมูลสัตว์</Modal.Header>
-            <Modal.Description>
-              <Container>
-                <AnimalForm mode="edit" value={value} />
-              </Container>
-            </Modal.Description>
-          </Modal>
-        </Card.Content> */}
       </Item>
     )
   }

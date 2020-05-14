@@ -4,6 +4,7 @@ import { IAnimalHistory } from '../../../models/AnimalHistory';
 import moment from 'moment';
 import 'moment/locale/th';
 import SmartFarmApi from '../../../api/SmartFarmApi';
+import BaseTable from '../../../common/components/Table/baseTable';
 
 moment.locale('th')
 interface IProps {
@@ -20,39 +21,30 @@ class FeedHistory extends Component<IProps, IState> {
     }
   }
   async componentDidMount() {
-    const data = await SmartFarmApi.getAnimalHistoryByBarcode(this.props.barcode)
+    let response = await SmartFarmApi.getAnimalHistoryByBarcode(this.props.barcode)
+    let data = response.map(item => {
+      item.date = `วันที่ ${moment(item.date).format('DD MMM YYYY')} (${moment(item.date).fromNow()})`
+      item.picComp = item.pictures.map((pic, index) => {
+        return <div key={`${index}-${pic.id}`} >
+          <Image src={pic.url} size='small' />
+        </div>
+      })
+      item.descriptionShow = <p style={{ fontWeight: 'normal', whiteSpace: 'break-spaces' }}>{item.description}</p>
+      return item;
+    })
     this.setState({ data: data })
   }
   render() {
     const { data } = this.state
+    const columns = [
+      { order: 2, colName: 'หัวข้อ', colKey: 'title' },
+      { order: 3, colName: 'รายละเอียด', colKey: 'descriptionShow' },
+      { order: 1, colName: 'วันที่', colKey: 'date' },
+      { order: 4, colName: 'รูป', colKey: 'picComp' },
+    ]
     return (
       <div>
-        <Feed>
-          {data.map((item, index) => {
-            return <Feed.Event key={index}>
-              <Feed.Label>
-                <img src='https://react.semantic-ui.com/images/avatar/small/elliot.jpg' />
-              </Feed.Label>
-              <Feed.Content>
-                <Feed.Summary>
-                  <Feed.User>{item.title}</Feed.User>
-                  <Feed.Date>วันที่ {moment(item.date).format('DD MMM YYYY')} ({moment(item.date).fromNow()})</Feed.Date>
-                </Feed.Summary>
-                <Feed.Summary>
-                  <p style={{ fontWeight: 'normal', whiteSpace: 'break-spaces' }}>{item.description}</p>
-                </Feed.Summary>
-                <Feed.Extra images>
-                  {item.pictures.map((pic, index) => {
-                    return <div key={`${index}-${pic.id}`} >
-                      <Image src={pic.url} size='small' />
-                    </div>
-                  })}
-                </Feed.Extra>
-              </Feed.Content>
-            </Feed.Event>
-          })}
-
-        </Feed>
+        <BaseTable data={data} columns={columns} />      
       </div>
     );
   }
