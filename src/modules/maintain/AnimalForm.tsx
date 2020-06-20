@@ -1,39 +1,56 @@
 import React, { Component, RefObject } from 'react';
-import { Card, Form, Input, Image, Button, Icon, Container } from 'semantic-ui-react';
-import moment from 'moment';
-import 'moment/locale/th';
+import { Card, Form, Input, Image, Button, Icon, Container, Divider } from 'semantic-ui-react';
 import * as _ from 'lodash';
-import {
-  DateInput,
-  TimeInput,
-  DateTimeInput,
-  DatesRangeInput
-} from 'semantic-ui-calendar-react';
+import { DateInput } from 'semantic-ui-calendar-react';
 import styles from './AnimalForm.module.css'
 import SmartFarmApi from '../../api/SmartFarmApi';
 import Resizer from 'react-image-file-resizer';
-class AnimalForm extends Component<any, any> {
+import moment from 'moment';
+import 'moment/locale/th';
+import Router from 'next/router';
+import Swal from 'sweetalert2'
+import * as Popup from '../../common/components/Popup/Popup';
+import { ErrorHandle } from '../../common/Errorhandle';
+import { IAnimalForm } from '../../models/SmartFarm';
+
+
+interface IProp {
+  value?: IAnimalForm,
+  mode?: 'create' | 'edit'
+}
+interface IState {
+  data: any,
+  value: IAnimalForm,
+  mode: 'create' | 'edit'
+}
+class AnimalForm extends Component<IProp, IState> {
   refsFileUpload: RefObject<any>;
-  initState = {
+  initState: IState = {
     mode: 'create',
     data: {
-      animalType: [
-        { animalTypeId: 1, animalType: 'วัว' },
-        { animalTypeId: 2, animalType: 'แกะ' },
-        { animalTypeId: 0, animalType: 'อื่นๆ' }
-      ],
+      formDetails: [],
+      animalType: [],
       sex: [{ sex: 'MALE', sexName: 'เพศผู้' }, { sex: 'FEMALE', sexName: 'เพศเมีย' }, { sex: 'NULL', sexName: 'ไม่ระบุ' }]
     },
     value: {
-      barcode: '',
-      animalType: '',
-      animalTypeOther: null,
-      name: '',
-      species: '',
-      discription: '',
-      dob: null,
-      sex: '',
-      picture: []
+      barcode: "",
+      animalName: "",
+      sex: "",
+      DOB: "",
+      description: "",
+      isActive: true,
+      father: "",
+      mother: "",
+      buyDate: "",
+      animalTypeId: 0,
+      pictures: [],
+      animalType: {
+        id: 0,
+        animalTypeName: "",
+        description: null,
+        animalSpeciesName: null
+      },
+      animalDetails: []
     }
   }
   constructor(props) {
@@ -44,30 +61,76 @@ class AnimalForm extends Component<any, any> {
     this.onReset = this.onReset.bind(this)
     this.onDeletePicture = this.onDeletePicture.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.onClickAddMoreDetails = this.onClickAddMoreDetails.bind(this)
     this.refsFileUpload = React.createRef();
   }
+  async fetchStaticData() {
+    let StateData = this.state.data
+    const animalsType = await SmartFarmApi.getAnimalsType()
+    const formDetails = await SmartFarmApi.getFormDetails()
+    animalsType.push({ animalTypeId: 0, animalTypeName: 'อื่นๆ' })
+    formDetails.push({ detailId: 0, detailTypeName: "อื่นๆ", description: "" })
+    StateData.animalType = animalsType
+    StateData.formDetails = formDetails
+    return StateData
+  }
   handleChange(e, data) {
-    const key = data.name;
-    const value = data.value;
-    let stateValue = { ...this.state.value, [key]: value };
+    let key = data.name;
+    let value = data.value;
+    let stateValue = _.clone(this.state.value);
+    if (key.includes('detail')) {
+      const index = parseInt(key.split('-')[1])
+      key = key.split('-')[0].split(':')[1]
+      let findKey: any = Object.assign({}, _.find(this.state.data.formDetails, { detailId: data.ids || value }))
+      if (!_.isEmpty(findKey)) {
+        if (key === 'detailId') {
+          stateValue.animalDetails[index] = findKey
+        } else {
+          stateValue.animalDetails[index][key] = value
+        }
+      } else {
+        stateValue.animalDetails[index][key] = value
+      }
+    } else {
+      stateValue[key] = value
+    }
+
     this.setState({ value: stateValue });
   }
   async handleSubmit(e, data) {
-    const formData = new FormData()
-    const value = this.state.value
-    Object.keys(value).forEach(key => {
-      if (key === 'picture') {
-        value.picture.forEach(item => {
-          formData.append(item.meta.name, item.meta)
-        })
+    Popup.Loading()
+    try {
+      let value = this.state.value
+      if (moment(value.DOB).isValid()) {
+        value.DOB = moment(value.DOB).format()
       } else {
-        formData.append(key, value[key])
+        value.DOB = moment().format()
       }
-    })
-    const result = await SmartFarmApi.saveAnimal(value)
-    console.log(result);
-
-
+      if (moment(value.buyDate).isValid()) {
+        value.buyDate = moment(value.buyDate).format()
+      } else {
+        value.buyDate = moment().format()
+      }
+      let result = null
+      if (this.props.mode === 'create') {
+        result = await SmartFarmApi.saveAnimal(value)
+        Router.push('/home')
+      } else {
+        value.pictures = _.reduce(value.pictures, (dataResult: any, item) => {
+          if (item.fileName) {
+            dataResult.push(item)
+          }
+          return dataResult
+        }, [])
+        result = await SmartFarmApi.updateAnimalInfo(value)
+        Router.push('/maintain/animal/edit')
+      }
+      Popup.Close()
+      //Router.reload()
+    } catch (error) {
+      console.log(error)
+      Popup.ShowError(JSON.stringify(error))
+    }
 
   }
   handleUploadFileChange(e) {
@@ -75,8 +138,8 @@ class AnimalForm extends Component<any, any> {
       const fileName = file.name
       let value = this.state.value;
       Resizer.imageFileResizer(file, 500, 500, 'JPEG', 100, 0, uri => {
-        const imgMeta = { filename: fileName, data: uri }
-        value.picture.push(imgMeta)
+        const imgMeta = { fileName: fileName, data: uri, pictureType: 'animal' }
+        value.pictures.push(imgMeta)
         this.setState({ value: value });
       }, 'base64')
 
@@ -92,10 +155,14 @@ class AnimalForm extends Component<any, any> {
 
   }
   onDeletePicture(event, data) {
-    const filename = data.data.filename
+    console.log(data);
+    const delFile = data.data
     let value = this.state.value
-    value.picture = _.reduce(value.picture, (result, valueItem) => {
-      if (valueItem.filename !== filename) {
+    if (delFile.id) {
+      SmartFarmApi.deleteAnimalPicture(delFile.id)
+    }
+    value.pictures = _.reduce(value.pictures, (result: any, valueItem) => {
+      if (valueItem.fileName !== delFile.fileName || valueItem.id !== delFile.id) {
         result.push(valueItem)
       }
       return result
@@ -103,19 +170,46 @@ class AnimalForm extends Component<any, any> {
     this.setState({ value: value })
   }
   onReset() {
-    let stateInint = this.initState
-    stateInint.value.picture = []
+    let stateInint: IState = { ...this.state }
+    if (this.props.mode === 'create') {
+      stateInint = { ...this.initState }
+      stateInint.value.pictures = []
+      stateInint.value.animalDetails = []
+    } else {
+      stateInint.value = this.props.value as IAnimalForm
+      stateInint.mode = this.props.mode as any
+    }
+    // stateInint.data = this.state.data
     this.setState({ ...stateInint })
   }
-  componentDidMount() {
+  onClickAddMoreDetails(e, Eventdata) {
+    let valueState = this.state.value
+    valueState.animalDetails.push({ detailId: 0, detailTypeName: "อื่นๆ", description: "", value: "" })
+    this.setState({ value: valueState })
+  }
+  async componentDidMount() {
+    let dataMaster = await this.fetchStaticData()
+    if (this.props.value) {
+      let value = this.props.value
+      value.animalDetails = value.animalDetails.map(item => {
+        const detailTypename: any = _.find(dataMaster.formDetails, { detailId: item.detailTypeId })
+        item.detailTypeName = detailTypename ? detailTypename.detailTypeName : ''
+        return item
+      })
+      this.setState({ value: value, mode: 'edit', data: dataMaster })
+    } else {
+      this.setState({ data: dataMaster })
+    }
 
   }
   render() {
     const { value, data, mode } = this.state
-    let animalType = data.animalType.map(item => { return { text: item.animalType, value: item.animalTypeId } })
+    let animalType = data.animalType.map(item => { return { text: item.animalTypeName, value: item.animalTypeId } })
     let sex = data.sex.map(item => { return { text: item.sexName, value: item.sex } })
+    let formDetails = data.formDetails.map(item => { return { text: item.detailTypeName, value: item.detailId } })
+   
     return (
-      <div>
+      <div style={{ padding: '1rem' }}>
         <Form onSubmit={this.handleSubmit}>
           <Form.Group>
             <Form.Input
@@ -125,14 +219,15 @@ class AnimalForm extends Component<any, any> {
               label="Barcode"
               value={value.barcode}
               name="barcode"
+              readOnly={mode === 'edit'}
               onChange={this.handleChange}>
             </Form.Input>
             <Form.Input
               placeholder="ชื่อสัตว์"
               label="ชื่อสัตว์"
               width="16"
-              value={value.name}
-              name='name'
+              value={value.animalName}
+              name='animalName'
               onChange={this.handleChange}>
             </Form.Input>
           </Form.Group>
@@ -141,10 +236,10 @@ class AnimalForm extends Component<any, any> {
               label="ชนิดสัตว์"
               options={animalType}
               placeholder="ชนิดสัตว์"
-              value={value.animalType}
+              value={value.animalTypeId}
               onChange={this.handleChange}
-              name="animalType" />
-            {value.animalType === 0 ?
+              name="animalTypeId" />
+            {value.animalTypeId === 0 ?
               <Form.Input
                 placeholder="ระบุชนิดสัตว์"
                 label="ระบุชนิดสัตว์"
@@ -152,13 +247,6 @@ class AnimalForm extends Component<any, any> {
                 name="animalTypeOther"
                 onChange={this.handleChange}>
               </Form.Input> : null}
-            <Form.Input
-              placeholder="พันธุ์สัตว์"
-              label="พันธุ์สัตว์"
-              value={value.name}
-              name='species'
-              onChange={this.handleChange}>
-            </Form.Input>
             <Form.Select
               placeholder="เพศ"
               label="เพศ"
@@ -167,60 +255,129 @@ class AnimalForm extends Component<any, any> {
               name='sex'
               onChange={this.handleChange}>
             </Form.Select>
+            <Form.Input
+              placeholder="พ่อพันธุ์"
+              label="พ่อพันธุ์"
+              value={value.father}
+              name='father'
+              onChange={this.handleChange}>
+            </Form.Input>
+            <Form.Input
+              placeholder="แม่พันธุ์"
+              label="แม่พันธุ์"
+              value={value.mother}
+              name='mother'
+              onChange={this.handleChange}>
+            </Form.Input>
           </Form.Group>
-          <Form.Field>
+          <Form.Group>
             <DateInput
-              name="dob"
+              name="DOB"
               placeholder="วันที่เกิด"
               label="วันที่เกิด"
-              value={value.dob}
+              value={value.DOB}
+              dateFormat="DD-MM-YYYY"
               iconPosition="left"
               onChange={this.handleChange}
               localization='th'
+              duration={10}
+            />
+            <DateInput
+              name="buyDate"
+              placeholder="วันที่ซื้อเข้าฟาร์ม"
+              label="วันที่ซื้อเข้าฟาร์ม"
+              value={value.buyDate}
+              dateFormat="DD-MM-YYYY"
+              iconPosition="left"
+              onChange={this.handleChange}
+              localization='th'
+              duration={10}
+            />
+          </Form.Group>
+          <Form.Field>
+            <Button
+              color='blue'
+              size='mini'
+              type="button"
+              content="เพิ่มข้อมูลอื่นๆ"
+              labelPosition="left"
+              icon="edit"
+              onClick={this.onClickAddMoreDetails}
             />
           </Form.Field>
+          {value.animalDetails.map((item, index) => {
+            return <div key={index}>
+              <Form.Group key={index}>
+                <Form.Select
+                  placeholder="ประเภทข้อมูล"
+                  label="ประเภทข้อมูล"
+                  options={formDetails}
+                  value={item.detailTypeId}
+                  key={`detail:detailId-${index}`}
+                  name={`detail:detailId-${index}`}
+                  onChange={(this.handleChange)}>
+                </Form.Select>
+                {item.detailId === 0 ?
+                  <Form.Input
+                    placeholder="ระบุประเภทข้อมูล"
+                    label="ระบุประเภทข้อมูล"
+                    value={value.animalTypeOther}
+                    ids={item.detailId}
+                    key={`detail:detailTypeName-${index}`}
+                    name={`detail:detailTypeName-${index}`}
+                    onChange={this.handleChange}>
+                  </Form.Input> : null}
+                <Form.TextArea
+                  placeholder={item.detailTypeName}
+                  label={item.detailTypeName}
+                  value={item.value}
+                  ids={item.detailId}
+                  key={`detail:value-${index}`}
+                  name={`detail:value-${index}`}
+                  onChange={this.handleChange}>
+                </Form.TextArea>
+              </Form.Group>
+              <Divider />
+            </div>
+          })}
           <Form.TextArea
             placeholder="รายละเอียด"
             label="รายละเอียด"
-            name="discription"
-            value={value.discription}
+            name="description"
+            value={value.description}
             onChange={this.handleChange}>
           </Form.TextArea>
-          {mode === 'create' ?
-            <Form.Field>
-              <Button
-                type="button"
-                content="เลือกรูปภาพ"
-                labelPosition="left"
-                icon="upload"
-                onClick={() => this.refsFileUpload.current.click()}
-              />
-              <input
-                ref={this.refsFileUpload}
-                name='picture'
-                type="file"
-                multiple
-                hidden
-                onChange={this.handleUploadFileChange}
-              />
-            </Form.Field> : null
-          }
+
+          <Form.Field>
+            <Button
+              type="button"
+              content="เลือกรูปภาพ"
+              labelPosition="left"
+              icon="upload"
+              onClick={() => this.refsFileUpload.current.click()}
+            />
+            <input
+              ref={this.refsFileUpload}
+              name='picture'
+              type="file"
+              multiple
+              hidden
+              onChange={this.handleUploadFileChange}
+            />
+          </Form.Field>
 
           <Image.Group size="medium" className={styles['text-center']}>
-            {value.picture.map(item => {
-              return <div className={styles['pic-div']} key={item.filename}>
-                <Button type="button"
-                  icon="window close"
-                  className={styles['pic-delete-btn']}
-                  data={item}
-                  onClick={this.onDeletePicture}></Button>
-                <Image src={item.data} alt={item.filename} rounded />
+            {value.pictures.map(item => {
+              const showDeletePic = mode === 'edit' ?
+                { as: 'a', color: 'red', corner: 'right', data: item, icon: 'window close', onClick: this.onDeletePicture } : null
+              return <div className={styles['pic-div']} key={item.id}>
+                <Image src={item.data} alt={item.id} rounded label={showDeletePic} />
               </div>
             })}
           </Image.Group>
 
           <Form.Group className={styles['center-div']}>
-            <Form.Button color="green" icon="saves" type="submit">บันทึกข้อมูล</Form.Button>
+            <Form.Button color="green" type="submit">บันทึกข้อมูล</Form.Button>
             <Form.Button color="red" type="reset" onClick={this.onReset}>ล้างข้อมูล</Form.Button>
           </Form.Group>
 

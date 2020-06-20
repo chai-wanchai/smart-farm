@@ -5,7 +5,6 @@ export class HomePage extends React.Component<any>{
 	// 	super(props);
 	// }
 	render() {
-		console.log(this.props)
 		return (
 			<React.Fragment>
 				<Home />
